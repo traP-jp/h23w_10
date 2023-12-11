@@ -7,7 +7,7 @@ import (
 	"github.com/traP-jp/h23w_10/pkg/domain"
 )
 
-type GetAllQuestionsResponse struct {
+type GetQuestionsResponce struct {
 	ID        string       `json:"id"`
 	UserID    string       `json:"user_id"`
 	Title     string       `json:"title"`
@@ -17,14 +17,14 @@ type GetAllQuestionsResponse struct {
 	Status    string       `json:"status"`
 }
 
-func (h Handler) GetAllQuestions(c echo.Context) error {
-	questions, err := h.qrepo.FindAll()
+func (h Handler) GetQuestions(c echo.Context, limit, offset int) error {
+	questions, err := h.qrepo.Find(limit, offset)
 	if err != nil {
 		return err
 	}
-	response := make([]GetAllQuestionsResponse, len(questions))
+	response := make([]GetQuestionsResponce, len(questions))
 	for i, q := range questions {
-		response[i] = GetAllQuestionsResponse{
+		response[i] = GetQuestionsResponce{
 			ID:        q.ID,
 			UserID:    q.UserID,
 			Title:     q.Title,
