@@ -4,9 +4,11 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/samber/lo"
 	"github.com/traP-jp/h23w_10/pkg/domain"
 	"github.com/traP-jp/h23w_10/pkg/domain/repository"
 )
@@ -49,13 +51,27 @@ func (h *Handler) GetQuestions(c echo.Context) error {
 		offset, _ = strconv.Atoi(o)
 	}
 
+	statuses := strings.Split(c.QueryParam("status"), ",")
+
 	tag := c.QueryParam("tag")
 	var questions []domain.Question
 	var err error
 	if tag != "" {
-		questions, err = h.qrepo.FindByTagID(tag, limit, offset)
+		questions, err = h.qrepo.FindByTagID(tag, &repository.FindQuestionsCondition{
+			Limit:  limit,
+			Offset: offset,
+			Statuses: lo.Map(statuses, func(i string, _ int) domain.QuestionStatus {
+				return domain.QuestionStatus(i)
+			}),
+		})
 	} else {
-		questions, err = h.qrepo.Find(limit, offset)
+		questions, err = h.qrepo.Find(&repository.FindQuestionsCondition{
+			Limit:  limit,
+			Offset: offset,
+			Statuses: lo.Map(statuses, func(i string, _ int) domain.QuestionStatus {
+				return domain.QuestionStatus(i)
+			}),
+		})
 	}
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())

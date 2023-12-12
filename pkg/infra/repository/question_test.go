@@ -6,6 +6,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/traP-jp/h23w_10/pkg/domain"
+	"github.com/traP-jp/h23w_10/pkg/domain/repository"
 )
 
 // エラーが出ないことを確認するためだけのテスト
@@ -15,7 +16,13 @@ func TestFindAllQuestions(t *testing.T) {
 	defer db.Close()
 
 	repo := NewQuestionRepository(db)
-	questions, err := repo.Find(10, 0)
+	questions, err := repo.Find(&repository.FindQuestionsCondition{
+		Limit:  10,
+		Offset: 0,
+		Statuses: []domain.QuestionStatus{
+			domain.QuestionStatusClosed,
+		},
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,7 +34,10 @@ func TestFindQuestionsByTagID(t *testing.T) {
 	defer db.Close()
 
 	repo := NewQuestionRepository(db)
-	questions, err := repo.FindByTagID("bc6c1c8d-9898-11ee-906b-0242ac120002", 10, 0)
+	questions, err := repo.FindByTagID("bc6c1c8d-9898-11ee-906b-0242ac120002", &repository.FindQuestionsCondition{
+		Limit:  10,
+		Offset: 0,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
