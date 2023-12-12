@@ -9,25 +9,25 @@ import (
 )
 
 type GetAnswersByQuestionIDResponse struct {
-	ID         string    `json:"id"`
-	UserID     string    `json:"user_id"`
-	QuestionID string    `json:"title"`
-	Content    string    `json:"content"`
-	CreatedAt  time.Time `json:"created_at"`
+	ID         string `json:"id,omitempty"`
+	UserID     string `json:"user_id,omitempty"`
+	QuestionID string `json:"title,omitempty"`
+	Content    string `json:"content,omitempty"`
+	CreatedAt  string `json:"created_at,omitempty"`
 }
 
 type PostAnswerRequest struct {
-	UserID     string `json:"user_id"`
-	QuestionID string `json:"question_id"`
-	Content    string `json:"content"`
+	UserID     string `json:"user_id,omitempty"`
+	QuestionID string `json:"question_id,omitempty"`
+	Content    string `json:"content,omitempty"`
 }
 
 type PostAnswerResponse struct {
-	ID         string    `json:"id"`
-	UserID     string    `json:"user_id"`
-	QuestionID string    `json:"title"`
-	Content    string    `json:"content"`
-	CreatedAt  time.Time `json:"created_at"`
+	ID         string `json:"id,omitempty"`
+	UserID     string `json:"user_id,omitempty"`
+	QuestionID string `json:"title,omitempty"`
+	Content    string `json:"content,omitempty"`
+	CreatedAt  string `json:"created_at,omitempty"`
 }
 
 func (h *Handler) GetAnswersByQuestionID(c echo.Context) error {
@@ -43,7 +43,7 @@ func (h *Handler) GetAnswersByQuestionID(c echo.Context) error {
 			UserID:     a.UserID,
 			QuestionID: a.QuestionID,
 			Content:    a.Content,
-			CreatedAt:  a.CreatedAt,
+			CreatedAt:  a.CreatedAt.String(),
 		}
 	}
 	return c.JSON(http.StatusOK, response)
@@ -72,7 +72,7 @@ func (h *Handler) PostAnswer(c echo.Context) error {
 		UserID:     result.UserID,
 		QuestionID: result.QuestionID,
 		Content:    result.Content,
-		CreatedAt:  result.CreatedAt,
+		CreatedAt:  result.CreatedAt.String(),
 	}
 
 	return c.JSON(http.StatusOK, response)
