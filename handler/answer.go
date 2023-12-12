@@ -75,5 +75,5 @@ func (h *Handler) PostAnswer(c echo.Context) error {
 		CreatedAt:  result.CreatedAt.String(),
 	}
 
-	return c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusCreated, response)
 }

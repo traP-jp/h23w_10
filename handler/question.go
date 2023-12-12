@@ -165,7 +165,7 @@ func (h *Handler) PostQuestion(c echo.Context) error {
 		Status:    string(result.Status),
 	}
 
-	return c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusCreated, response)
 }
 
 func (h *Handler) PostTag(c echo.Context) error {
@@ -190,5 +190,5 @@ func (h *Handler) PostTag(c echo.Context) error {
 		Name: result.Name,
 	}
 
-	return c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusCreated, response)
 }
