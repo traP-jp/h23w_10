@@ -60,7 +60,7 @@ func (h *Handler) GetQuestions(c echo.Context) error {
 		offset, _ = strconv.Atoi(o)
 	}
 	var statuses []string
-	if s := c.QueryParam("statuse"); s != "" {
+	if s := c.QueryParam("status"); s != "" {
 		statuses = strings.Split(s, ",")
 	}
 	condition := &repository.FindQuestionsCondition{
