@@ -8,6 +8,7 @@ type QuestionRepository interface {
 	FindByID(id string) (*domain.Question, error)
 	FindByTagID(tagID string, condition *FindQuestionsCondition) ([]domain.Question, error)
 	Create(question *domain.Question) (*domain.Question, error)
+	CreateTag(tag *domain.Tag) (*domain.Tag, error)
 }
 
 type FindQuestionsCondition struct {
