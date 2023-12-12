@@ -8,7 +8,7 @@ export type Tag = {
 export type GetTagsRequest = {}
 export type GetTagsResponse = Tag[]
 
-export const getTags = async (req: GetTagsRequest): Promise<GetTagsResponse> => {
+export const getTags = async (req?: GetTagsRequest): Promise<GetTagsResponse> => {
   if (import.meta.env.DEV) {
     const { getTagsMock } = await import('./mock')
     return getTagsMock(req)

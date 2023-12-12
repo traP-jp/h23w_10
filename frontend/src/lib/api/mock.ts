@@ -17,13 +17,19 @@ const tags: Tag[] = [
   'CTF',
   'Python',
   'Graphic',
-  'Python',
   'TypeScript',
   'ClipStudioPaint'
 ].map((name) => ({
   id: crypto.randomUUID(),
   name
 }))
+
+const randomChoice = <T>(arr: T[], count: number): T[] => {
+  if (arr.length <= count) return arr
+  const copy = [...arr]
+  return copy.sort(() => Math.random() - 0.5).slice(0, count)
+}
+
 const answers: Answer[] = []
 const users: User[] = []
 const questions: Question[] = new Array(100)
@@ -31,7 +37,6 @@ const questions: Question[] = new Array(100)
     userId: crypto.randomUUID(),
     content: 'テストの質問です',
     createdAt: new Date(2023, 11, 13),
-    tags: [tags[0], tags[1]],
     status: 'open'
   } satisfies Partial<Question>)
   .map<Question>((question, i) => {
@@ -40,6 +45,7 @@ const questions: Question[] = new Array(100)
       ...question,
       id,
       title: `テストの質問${i}`,
+      tags: randomChoice(tags, Math.floor(Math.random() * 3)),
       answers: new Array(Math.floor(Math.random() * 10)).fill({
         id: crypto.randomUUID(),
         questionId: id,
@@ -118,7 +124,7 @@ export const postAnswerMock = async (req: PostAnswerRequest): Promise<PostAnswer
 /**
  * **モックAPI**です! 代わりに`getTags` (/src/lib/api/tags.ts)を使ってください。(開発環境では勝手にモックが使用されます)
  */
-export const getTagsMock = async (_req: GetTagsRequest): Promise<GetTagsResponse> => {
+export const getTagsMock = async (_req?: GetTagsRequest): Promise<GetTagsResponse> => {
   return tags
 }
 
