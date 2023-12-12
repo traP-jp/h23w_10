@@ -1,5 +1,5 @@
 <template>
-  <v-card class="container">
+  <v-card class="container" :href="`/questions/${props.question.id}`" tag="a">
     <v-card-title>
       <div>
         {{ props.question.title }}
