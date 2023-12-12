@@ -64,5 +64,10 @@ func (h *Handler) GetQuestionByID(c echo.Context) error {
 	} else if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
+	answers, err := h.arepo.FindByQuestionID(id)
+	if err != nil && !errors.Is(err, repository.ErrNotFound) {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	response.Answers = answers
 	return c.JSON(http.StatusOK, response)
 }
