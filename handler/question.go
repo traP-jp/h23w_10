@@ -36,7 +36,6 @@ type PostQuestionResponce struct {
 	Content   string
 	CreatedAt time.Time
 	Tags      []domain.Tag
-	Answers   []domain.Answer
 	Status    domain.QuestionStatus
 }
 
