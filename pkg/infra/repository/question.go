@@ -209,15 +209,18 @@ func (r *QuestionRepository) CreateTag(tag *domain.Tag) (*domain.Tag, error) {
 
 func (r *QuestionRepository) getStatusIDs(statuses []domain.QuestionStatus) ([]int, error) {
 	var statusIDs []int
-	for _, status := range statuses {
-		statusID, err := r.getStatusIDByName(string(status))
-		if err != nil {
+	if len(statuses) == 0 {
+		if err := r.db.Select(&statusIDs, "SELECT id FROM question_statuses"); err != nil {
 			return nil, err
 		}
-		statusIDs = append(statusIDs, statusID)
-	}
-	if len(statusIDs) == 0 {
-		r.db.Select(&statusIDs, "SELECT id FROM question_statuses")
+	} else {
+		for _, status := range statuses {
+			statusID, err := r.getStatusIDByName(string(status))
+			if err != nil {
+				return nil, err
+			}
+			statusIDs = append(statusIDs, statusID)
+		}
 	}
 	return statusIDs, nil
 }

@@ -59,28 +59,25 @@ func (h *Handler) GetQuestions(c echo.Context) error {
 	if o := c.QueryParam("offset"); o != "" {
 		offset, _ = strconv.Atoi(o)
 	}
-
-	statuses := strings.Split(c.QueryParam("status"), ",")
+	var statuses []string
+	if s := c.QueryParam("statuses"); s != "" {
+		statuses = strings.Split(s, ",")
+	}
+	condition := &repository.FindQuestionsCondition{
+		Limit:  limit,
+		Offset: offset,
+		Statuses: lo.Map(statuses, func(i string, _ int) domain.QuestionStatus {
+			return domain.QuestionStatus(i)
+		}),
+	}
 
 	tag := c.QueryParam("tag")
 	var questions []domain.Question
 	var err error
 	if tag != "" {
-		questions, err = h.qrepo.FindByTagID(tag, &repository.FindQuestionsCondition{
-			Limit:  limit,
-			Offset: offset,
-			Statuses: lo.Map(statuses, func(i string, _ int) domain.QuestionStatus {
-				return domain.QuestionStatus(i)
-			}),
-		})
+		questions, err = h.qrepo.FindByTagID(tag, condition)
 	} else {
-		questions, err = h.qrepo.Find(&repository.FindQuestionsCondition{
-			Limit:  limit,
-			Offset: offset,
-			Statuses: lo.Map(statuses, func(i string, _ int) domain.QuestionStatus {
-				return domain.QuestionStatus(i)
-			}),
-		})
+		questions, err = h.qrepo.Find(condition)
 	}
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
