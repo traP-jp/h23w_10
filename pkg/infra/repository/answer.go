@@ -45,6 +45,14 @@ func (r *AnswerRepository) FindByQuestionID(questionID string) ([]domain.Answer,
 	return result, nil
 }
 
+func (r *AnswerRepository) Create(answer *domain.Answer) (*domain.Answer, error) {
+	_, err := r.db.Exec("INSERT INTO answers (id, question_id, user_id, content, created_at) VALUES (?, ?, ?, ?, ?)", answer.ID, answer.QuestionID, answer.UserID, answer.Content, answer.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return answer, nil
+}
+
 func fromAnswerModel(answer Answer) domain.Answer {
 	return domain.Answer{
 		ID:         answer.ID,
