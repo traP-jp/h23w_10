@@ -31,6 +31,7 @@ func main() {
 	e.POST("/questions", h.PostQuestion)
 	e.GET("/questions/:id", h.GetQuestionByID)
 	e.POST("/questions/:id/answers", h.PostAnswer)
+	e.GET("/tags", h.GetTags)
 	e.POST("/tags", h.PostTag)
 
 	e.Logger.Fatal(e.Start(":8080"))

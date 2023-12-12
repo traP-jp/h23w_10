@@ -23,6 +23,11 @@ type GetQuestionsResponse struct {
 	Status    string       `json:"status,omitempty"`
 }
 
+type GetTagsResponse struct {
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
 type PostQuestionRequest struct {
 	UserID  string       `json:"user_id,omitempty"`
 	Title   string       `json:"title,omitempty"`
@@ -42,12 +47,12 @@ type PostQuestionResponse struct {
 }
 
 type PostTagRequest struct {
-	Name string
+	Name string `json:"name,omitempty"`
 }
 
 type PostTagResponse struct {
-	ID   string
-	Name string
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 func (h *Handler) GetQuestions(c echo.Context) error {
@@ -111,6 +116,22 @@ func (h *Handler) GetQuestionByID(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	response.Answers = answers
+	return c.JSON(http.StatusOK, response)
+}
+
+func (h *Handler) GetTags(c echo.Context) error {
+	tags, err := h.qrepo.FindTags()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	response := make([]GetTagsResponse, len(tags))
+	for i, t := range tags {
+		response[i] = GetTagsResponse{
+			ID:   t.ID,
+			Name: t.Name,
+		}
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
