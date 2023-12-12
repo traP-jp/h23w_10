@@ -27,9 +27,17 @@ func (h Handler) GetQuestions(c echo.Context) error {
 	if o := c.QueryParam("offset"); o != "" {
 		offset, _ = strconv.Atoi(o)
 	}
-	questions, err := h.qrepo.Find(limit, offset)
+
+	tag := c.QueryParam("tag")
+	var questions []domain.Question
+	var err error
+	if tag != "" {
+		questions, err = h.qrepo.FindByTagID(tag, limit, offset)
+	} else {
+		questions, err = h.qrepo.Find(limit, offset)
+	}
 	if err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	response := make([]GetQuestionsResponce, len(questions))
 	for i, q := range questions {
