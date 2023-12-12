@@ -11,7 +11,7 @@ import (
 	"github.com/traP-jp/h23w_10/pkg/domain/repository"
 )
 
-type GetQuestionsResponce struct {
+type GetQuestionsresponse struct {
 	ID        string       `json:"id"`
 	UserID    string       `json:"user_id"`
 	Title     string       `json:"title"`
@@ -29,7 +29,7 @@ type PostQuestionRequest struct {
 	Status  domain.QuestionStatus
 }
 
-type PostQuestionResponce struct {
+type PostQuestionresponse struct {
 	ID        string
 	UserID    string
 	Title     string
@@ -37,6 +37,15 @@ type PostQuestionResponce struct {
 	CreatedAt time.Time
 	Tags      []domain.Tag
 	Status    domain.QuestionStatus
+}
+
+type PostTagRequest struct {
+	Name string
+}
+
+type PostTagResponse struct {
+	ID   string
+	Name string
 }
 
 func (h *Handler) GetQuestions(c echo.Context) error {
@@ -60,9 +69,9 @@ func (h *Handler) GetQuestions(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	response := make([]GetQuestionsResponce, len(questions))
+	response := make([]GetQuestionsresponse, len(questions))
 	for i, q := range questions {
-		response[i] = GetQuestionsResponce{
+		response[i] = GetQuestionsresponse{
 			ID:        q.ID,
 			UserID:    q.UserID,
 			Title:     q.Title,
@@ -112,7 +121,7 @@ func (h *Handler) PostQuestion(c echo.Context) error {
 		return err
 	}
 
-	responce := PostQuestionResponce{
+	response := PostQuestionresponse{
 		ID:        result.ID,
 		UserID:    result.UserID,
 		Title:     result.Title,
@@ -122,5 +131,28 @@ func (h *Handler) PostQuestion(c echo.Context) error {
 		Status:    result.Status,
 	}
 
-	return c.JSON(http.StatusOK, responce)
+	return c.JSON(http.StatusOK, response)
+}
+
+func (h *Handler) PostTag(c echo.Context) error {
+	var request PostTagRequest
+	if err := c.Bind(&request); err != nil {
+		return err
+	}
+
+	tag := &domain.Tag{
+		ID:   domain.NewUUID(),
+		Name: request.Name,
+	}
+	result, err := h.qrepo.CreateTag(tag)
+	if err != nil {
+		return err
+	}
+
+	response := PostTagResponse{
+		ID:   result.ID,
+		Name: result.Name,
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
