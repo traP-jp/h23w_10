@@ -7,7 +7,6 @@
       item-title="name"
       item-value="id"
       clearable
-      @change="req.page = 1"
     />
     <div v-if="!loading" class="questions">
       <QuestionCard v-for="question in data.questions" :key="question.id" :question="question" />
@@ -51,10 +50,47 @@ const req = reactive<Req>({
     typeof route.query.status === 'string' ? (route.query.status as QuestionStatus) : undefined
 })
 
+// queryが変更されたらreqを更新する (ブラウザバック等の対応)
+watch(
+  () => route.query,
+  (query) => {
+    req.page = typeof query.page === 'string' ? parseInt(query.page) : 1
+    req.tag = typeof query.tag === 'string' ? query.tag : undefined
+    req.status = typeof query.status === 'string' ? (query.status as QuestionStatus) : undefined
+  },
+  {
+    immediate: true
+  }
+)
+
+// tagが変更されたらpageを1にする
+watch(
+  () => req.tag,
+  () => {
+    req.page = 1
+  },
+  {
+    immediate: true
+  }
+)
+
+// フィルター, ページが変更されたらAPIを叩く
 watch(
   req,
   async (req) => {
     loading.value = true
+
+    const newQuery: Partial<Record<keyof Req, string>> = {
+      page: req.page.toString()
+    }
+    if (req.tag) {
+      newQuery.tag = req.tag
+    }
+    if (req.status) {
+      newQuery.status = req.status
+    }
+    history.pushState(null, '', `${route.path}?${new URLSearchParams(newQuery).toString()}`)
+
     try {
       const res = await getQuestions({
         limit,
