@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/traP-jp/h23w_10/pkg/domain"
@@ -18,6 +19,24 @@ type GetQuestionsResponce struct {
 	CreatedAt string       `json:"created_at"`
 	Tags      []domain.Tag `json:"tags"`
 	Status    string       `json:"status"`
+}
+
+type PostQuestionRequest struct {
+	UserID  string
+	Title   string
+	Content string
+	Tags    []domain.Tag
+	Status  domain.QuestionStatus
+}
+
+type PostQuestionResponce struct {
+	ID        string
+	UserID    string
+	Title     string
+	Content   string
+	CreatedAt time.Time
+	Tags      []domain.Tag
+	Status    domain.QuestionStatus
 }
 
 func (h *Handler) GetQuestions(c echo.Context) error {
@@ -71,4 +90,37 @@ func (h *Handler) GetQuestionByID(c echo.Context) error {
 	}
 	response.Answers = answers
 	return c.JSON(http.StatusOK, response)
+}
+
+func (h *Handler) PostQuestion(c echo.Context) error {
+	var request PostQuestionRequest
+	if err := c.Bind(&request); err != nil {
+		return err
+	}
+
+	question := &domain.Question{
+		ID:        domain.NewUUID(),
+		UserID:    request.UserID,
+		Title:     request.Title,
+		Content:   request.Content,
+		CreatedAt: time.Now(),
+		Tags:      request.Tags,
+		Status:    request.Status,
+	}
+	result, err := h.qrepo.Create(question)
+	if err != nil {
+		return err
+	}
+
+	responce := PostQuestionResponce{
+		ID:        result.ID,
+		UserID:    result.UserID,
+		Title:     result.Title,
+		Content:   result.Content,
+		CreatedAt: result.CreatedAt,
+		Tags:      result.Tags,
+		Status:    result.Status,
+	}
+
+	return c.JSON(http.StatusOK, responce)
 }
