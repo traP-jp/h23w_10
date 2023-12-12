@@ -26,6 +26,7 @@ type PostQuestionRequest struct {
 	Title   string
 	Content string
 	Tags    []domain.Tag
+	Status  domain.QuestionStatus
 }
 
 type PostQuestionResponce struct {
@@ -105,8 +106,7 @@ func (h *Handler) PostQuestion(c echo.Context) error {
 		Content:   request.Content,
 		CreatedAt: time.Now(),
 		Tags:      request.Tags,
-		Answers:   []domain.Answer{},
-		Status:    domain.QuestionStatusOpen,
+		Status:    request.Status,
 	}
 	result, err := h.qrepo.Create(question)
 	if err != nil {
@@ -120,7 +120,6 @@ func (h *Handler) PostQuestion(c echo.Context) error {
 		Content:   result.Content,
 		CreatedAt: result.CreatedAt,
 		Tags:      result.Tags,
-		Answers:   result.Answers,
 		Status:    result.Status,
 	}
 
