@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"database/sql"
+	"errors"
 	"slices"
 	"time"
 
@@ -63,14 +65,7 @@ func (r *QuestionRepository) Find(limit, offset int) ([]domain.Question, error) 
 		if err != nil {
 			return nil, err
 		}
-		questions[question.ID] = &domain.Question{
-			ID:        question.ID,
-			UserID:    question.UserID,
-			Title:     question.Title,
-			Content:   question.Content,
-			CreatedAt: question.CreatedAt,
-			Status:    domain.QuestionStatus(statuses[question.StatusID]),
-		}
+		questions[question.ID] = fromQuestionModel(question, statuses[question.StatusID])
 		ids = append(ids, question.ID)
 	}
 	if err := rows.Err(); err != nil {
@@ -119,6 +114,44 @@ func (r *QuestionRepository) Find(limit, offset int) ([]domain.Question, error) 
 	return result, nil
 }
 
+func (r *QuestionRepository) FindByID(id string) (*domain.Question, error) {
+	// get status
+	statuses, err := r.getAllStatuses()
+	if err != nil {
+		return nil, err
+	}
+
+	// get question
+	var question Question
+	err = r.db.Get(&question, "SELECT * FROM questions WHERE id = ?", id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+	result := fromQuestionModel(question, statuses[question.StatusID])
+
+	// get tags
+	rows, err := r.db.Queryx("SELECT tags.id, tags.name FROM tags INNER JOIN question_tags qt ON tags.id = qt.tag_id WHERE qt.question_id = ?", id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var tag Tag
+	for rows.Next() {
+		err := rows.StructScan(&tag)
+		if err != nil {
+			return nil, err
+		}
+		result.Tags = append(result.Tags, domain.Tag{ID: tag.ID, Name: tag.Name})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func (r *QuestionRepository) getAllStatuses() (map[int]string, error) {
 	statuses := make(map[int]string)
 	rows, err := r.db.Queryx("SELECT * FROM question_statuses")
@@ -135,4 +168,15 @@ func (r *QuestionRepository) getAllStatuses() (map[int]string, error) {
 		statuses[status.ID] = status.Name
 	}
 	return statuses, nil
+}
+
+func fromQuestionModel(question Question, status string) *domain.Question {
+	return &domain.Question{
+		ID:        question.ID,
+		UserID:    question.UserID,
+		Title:     question.Title,
+		Content:   question.Content,
+		CreatedAt: question.CreatedAt,
+		Status:    domain.QuestionStatus(status),
+	}
 }
