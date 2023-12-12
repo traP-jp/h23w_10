@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/traP-jp/h23w_10/pkg/domain"
@@ -17,7 +18,15 @@ type GetQuestionsResponce struct {
 	Status    string       `json:"status"`
 }
 
-func (h Handler) GetQuestions(c echo.Context, limit, offset int) error {
+func (h Handler) GetQuestions(c echo.Context) error {
+	limit := 10
+	offset := 0
+	if l := c.QueryParam("limit"); l != "" {
+		limit, _ = strconv.Atoi(l)
+	}
+	if o := c.QueryParam("offset"); o != "" {
+		offset, _ = strconv.Atoi(o)
+	}
 	questions, err := h.qrepo.Find(limit, offset)
 	if err != nil {
 		return err

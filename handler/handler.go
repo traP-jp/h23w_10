@@ -6,3 +6,10 @@ type Handler struct {
 	qrepo repository.QuestionRepository
 	arepo repository.AnswerRepository
 }
+
+func NewHandler(qrepo repository.QuestionRepository, arepo repository.AnswerRepository) *Handler {
+	return &Handler{
+		qrepo: qrepo,
+		arepo: arepo,
+	}
+}
