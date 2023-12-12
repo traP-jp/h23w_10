@@ -45,9 +45,18 @@ type QuestionStatus struct {
 	Name string `db:"name"`
 }
 
-func (r *QuestionRepository) Find(limit, offset int) ([]domain.Question, error) {
+func (r *QuestionRepository) Find(condition *repository.FindQuestionsCondition) ([]domain.Question, error) {
+	statuses, err := r.getStatusIDs(condition.Statuses)
+	if err != nil {
+		return nil, err
+	}
 	// get questions
-	rows, err := r.db.Queryx("SELECT * FROM questions ORDER BY created_at DESC LIMIT ? OFFSET ?", limit, offset)
+	query, params, err := sqlx.In("SELECT * FROM questions WHERE status_id IN (?) ORDER BY created_at DESC LIMIT ? OFFSET ?",
+		statuses,
+		condition.Limit,
+		condition.Offset,
+	)
+	rows, err := r.db.Queryx(query, params...)
 	if err != nil {
 		return nil, err
 	}
@@ -61,9 +70,19 @@ func (r *QuestionRepository) Find(limit, offset int) ([]domain.Question, error) 
 	return result, nil
 }
 
-func (r *QuestionRepository) FindByTagID(tagID string, limit, offset int) ([]domain.Question, error) {
+func (r *QuestionRepository) FindByTagID(tagID string, condition *repository.FindQuestionsCondition) ([]domain.Question, error) {
+	statuses, err := r.getStatusIDs(condition.Statuses)
+	if err != nil {
+		return nil, err
+	}
 	// get questions
-	rows, err := r.db.Queryx("SELECT q.* FROM questions q INNER JOIN question_tags qt ON q.id = qt.question_id WHERE qt.tag_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?", tagID, limit, offset)
+	query, params, err := sqlx.In("SELECT q.* FROM questions q INNER JOIN question_tags qt ON q.id = qt.question_id WHERE qt.tag_id = ? AND q.status_id IN (?) ORDER BY created_at DESC LIMIT ? OFFSET ?",
+		tagID,
+		statuses,
+		condition.Limit,
+		condition.Offset,
+	)
+	rows, err := r.db.Queryx(query, params...)
 	if err != nil {
 		return nil, err
 	}
@@ -160,6 +179,21 @@ func (r *QuestionRepository) Create(question *domain.Question) (*domain.Question
 	}
 
 	return question, nil
+}
+
+func (r *QuestionRepository) getStatusIDs(statuses []domain.QuestionStatus) ([]int, error) {
+	var statusIDs []int
+	for _, status := range statuses {
+		statusID, err := r.getStatusIDByName(string(status))
+		if err != nil {
+			return nil, err
+		}
+		statusIDs = append(statusIDs, statusID)
+	}
+	if len(statusIDs) == 0 {
+		r.db.Select(&statusIDs, "SELECT id FROM question_statuses")
+	}
+	return statusIDs, nil
 }
 
 func (r *QuestionRepository) applyTags(questionRows *sqlx.Rows) ([]domain.Question, error) {
