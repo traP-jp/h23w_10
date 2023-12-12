@@ -181,6 +181,32 @@ func (r *QuestionRepository) Create(question *domain.Question) (*domain.Question
 	return question, nil
 }
 
+func (r *QuestionRepository) CreateTag(tag *domain.Tag) (*domain.Tag, error) {
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	// check tag exists
+	count := 0
+	err = tx.Get(&count, "SELECT COUNT(*) FROM tags WHERE name = ?", tag.Name)
+	if count != 0 {
+		return nil, repository.ErrTagAlreadyExists
+	}
+	// insert tag
+	_, err = tx.Exec("INSERT INTO tags (id, name) VALUES (?, ?)", tag.ID, tag.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return tag, nil
+}
+
 func (r *QuestionRepository) getStatusIDs(statuses []domain.QuestionStatus) ([]int, error) {
 	var statusIDs []int
 	for _, status := range statuses {
