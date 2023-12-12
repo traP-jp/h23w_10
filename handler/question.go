@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/traP-jp/h23w_10/pkg/domain"
+	"github.com/traP-jp/h23w_10/pkg/domain/repository"
 )
 
 type GetQuestionsResponce struct {
@@ -18,7 +20,7 @@ type GetQuestionsResponce struct {
 	Status    string       `json:"status"`
 }
 
-func (h Handler) GetQuestions(c echo.Context) error {
+func (h *Handler) GetQuestions(c echo.Context) error {
 	limit := 10
 	offset := 0
 	if l := c.QueryParam("limit"); l != "" {
@@ -50,6 +52,17 @@ func (h Handler) GetQuestions(c echo.Context) error {
 			Tags:      q.Tags,
 			Status:    string(q.Status),
 		}
+	}
+	return c.JSON(http.StatusOK, response)
+}
+
+func (h *Handler) GetQuestionByID(c echo.Context) error {
+	id := c.Param("id")
+	response, err := h.qrepo.FindByID(id)
+	if errors.Is(err, repository.ErrNotFound) {
+		return echo.NewHTTPError(http.StatusNotFound, err.Error())
+	} else if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusOK, response)
 }
