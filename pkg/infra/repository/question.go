@@ -181,6 +181,25 @@ func (r *QuestionRepository) Create(question *domain.Question) (*domain.Question
 	return question, nil
 }
 
+func (r *QuestionRepository) FindTags() ([]domain.Tag, error) {
+	var tags []Tag
+	err := r.db.Select(&tags, "SELECT * FROM tags")
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, repository.ErrNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	result := make([]domain.Tag, len(tags))
+	for i, tag := range tags {
+		result[i] = domain.Tag{
+			ID:   tag.ID,
+			Name: tag.Name,
+		}
+	}
+	return result, nil
+}
+
 func (r *QuestionRepository) CreateTag(tag *domain.Tag) (*domain.Tag, error) {
 	tx, err := r.db.Beginx()
 	if err != nil {
