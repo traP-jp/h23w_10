@@ -64,16 +64,18 @@ func (h *Handler) GetQuestions(c echo.Context) error {
 	if o := c.QueryParam("offset"); o != "" {
 		offset, _ = strconv.Atoi(o)
 	}
-	var statuses []string
+	var statuses []domain.QuestionStatus
 	if s := c.QueryParam("status"); s != "" {
-		statuses = strings.Split(s, ",")
+		statuses = lo.Map(strings.Split(s, ","), func(i string, _ int) domain.QuestionStatus {
+			return domain.QuestionStatus(i)
+		})
+	} else {
+		statuses = domain.AvailableQuestionStatus()
 	}
 	condition := &repository.FindQuestionsCondition{
-		Limit:  limit,
-		Offset: offset,
-		Statuses: lo.Map(statuses, func(i string, _ int) domain.QuestionStatus {
-			return domain.QuestionStatus(i)
-		}),
+		Limit:    limit,
+		Offset:   offset,
+		Statuses: statuses,
 	}
 
 	tag := c.QueryParam("tag")

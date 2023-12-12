@@ -24,3 +24,10 @@ const (
 	QuestionStatusOpen   QuestionStatus = "open"
 	QuestionStatusClosed QuestionStatus = "closed"
 )
+
+func AvailableQuestionStatus() []QuestionStatus {
+	return []QuestionStatus{
+		QuestionStatusOpen,
+		QuestionStatusClosed,
+	}
+}

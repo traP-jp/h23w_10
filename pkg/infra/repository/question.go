@@ -226,18 +226,12 @@ func (r *QuestionRepository) CreateTag(tag *domain.Tag) (*domain.Tag, error) {
 
 func (r *QuestionRepository) getStatusIDs(statuses []domain.QuestionStatus) ([]int, error) {
 	var statusIDs []int
-	if len(statuses) == 0 {
-		if err := r.db.Select(&statusIDs, "SELECT id FROM question_statuses"); err != nil {
+	for _, status := range statuses {
+		statusID, err := r.getStatusIDByName(string(status))
+		if err != nil {
 			return nil, err
 		}
-	} else {
-		for _, status := range statuses {
-			statusID, err := r.getStatusIDByName(string(status))
-			if err != nil {
-				return nil, err
-			}
-			statusIDs = append(statusIDs, statusID)
-		}
+		statusIDs = append(statusIDs, statusID)
 	}
 	return statusIDs, nil
 }
@@ -326,14 +320,14 @@ func (r *QuestionRepository) getAllStatuses() (map[int]string, error) {
 }
 
 func (r *QuestionRepository) getStatusIDByName(name string) (int, error) {
-	var status QuestionStatus
-	err := r.db.Get(&status, "SELECT * FROM question_statuses WHERE name = ?", name)
+	var statusID QuestionStatus
+	err := r.db.Get(&statusID, "SELECT id FROM question_statuses WHERE name = ?", name)
 	if errors.Is(err, sql.ErrNoRows) {
 		return 0, nil
 	} else if err != nil {
 		return 0, err
 	}
-	return status.ID, nil
+	return statusID.ID, nil
 }
 
 func fromQuestionModel(question Question, status string) *domain.Question {
