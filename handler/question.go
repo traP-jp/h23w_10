@@ -14,31 +14,31 @@ import (
 )
 
 type GetQuestionsResponse struct {
-	ID        string       `json:"id"`
-	UserID    string       `json:"user_id"`
-	Title     string       `json:"title"`
-	Content   string       `json:"content"`
-	CreatedAt string       `json:"created_at"`
-	Tags      []domain.Tag `json:"tags"`
-	Status    string       `json:"status"`
+	ID        string       `json:"id,omitempty"`
+	UserID    string       `json:"user_id,omitempty"`
+	Title     string       `json:"title,omitempty"`
+	Content   string       `json:"content,omitempty"`
+	CreatedAt string       `json:"created_at,omitempty"`
+	Tags      []domain.Tag `json:"tags,omitempty"`
+	Status    string       `json:"status,omitempty"`
 }
 
 type PostQuestionRequest struct {
-	UserID  string
-	Title   string
-	Content string
-	Tags    []domain.Tag
-	Status  domain.QuestionStatus
+	UserID  string       `json:"user_id,omitempty"`
+	Title   string       `json:"title,omitempty"`
+	Content string       `json:"content,omitempty"`
+	Tags    []domain.Tag `json:"tags,omitempty"`
+	Status  string       `json:"status,omitempty"`
 }
 
 type PostQuestionResponse struct {
-	ID        string
-	UserID    string
-	Title     string
-	Content   string
-	CreatedAt time.Time
-	Tags      []domain.Tag
-	Status    domain.QuestionStatus
+	ID        string       `json:"id,omitempty"`
+	UserID    string       `json:"user_id,omitempty"`
+	Title     string       `json:"title,omitempty"`
+	Content   string       `json:"content,omitempty"`
+	CreatedAt string       `json:"created_at,omitempty"`
+	Tags      []domain.Tag `json:"tags,omitempty"`
+	Status    string       `json:"status,omitempty"`
 }
 
 type PostTagRequest struct {
@@ -130,7 +130,7 @@ func (h *Handler) PostQuestion(c echo.Context) error {
 		Content:   request.Content,
 		CreatedAt: time.Now(),
 		Tags:      request.Tags,
-		Status:    request.Status,
+		Status:    domain.QuestionStatus(request.Status),
 	}
 	result, err := h.qrepo.Create(question)
 	if err != nil {
@@ -142,9 +142,9 @@ func (h *Handler) PostQuestion(c echo.Context) error {
 		UserID:    result.UserID,
 		Title:     result.Title,
 		Content:   result.Content,
-		CreatedAt: result.CreatedAt,
+		CreatedAt: result.CreatedAt.String(),
 		Tags:      result.Tags,
-		Status:    result.Status,
+		Status:    string(result.Status),
 	}
 
 	return c.JSON(http.StatusOK, response)

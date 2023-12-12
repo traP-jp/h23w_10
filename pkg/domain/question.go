@@ -14,8 +14,8 @@ type Question struct {
 }
 
 type Tag struct {
-	ID   string
-	Name string
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 type QuestionStatus string
