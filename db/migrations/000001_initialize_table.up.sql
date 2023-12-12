@@ -27,6 +27,16 @@ CREATE TABLE IF NOT EXISTS `question_tags` (
     PRIMARY KEY (`question_id`, `tag_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS `answers` (
+    `id` VARCHAR(36) NOT NULL,
+    `user_id` VARCHAR(255) NOT NULL,
+    `question_id` VARCHAR(36) NOT NULL,
+    `content` text NOT NULL,
+    `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 INSERT INTO `question_statuses` (`id`, `name`) VALUES
 (1, 'open'),
 (2, 'closed');
