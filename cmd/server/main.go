@@ -29,6 +29,7 @@ func main() {
 
 	e.GET("/questions", h.GetQuestions)
 	e.POST("/questions/:id/answers", h.PostAnswer)
+	e.GET("/questions/:id", h.GetQuestionByID)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
