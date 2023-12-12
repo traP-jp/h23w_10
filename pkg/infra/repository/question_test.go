@@ -2,9 +2,11 @@ package repository
 
 import (
 	"testing"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+	"github.com/traP-jp/h23w_10/pkg/domain"
 )
 
 // エラーが出ないことを確認するためだけのテスト
@@ -43,4 +45,28 @@ func TestFindQuestionByID(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("%+v", question)
+}
+
+func TestCreateQuestion(t *testing.T) {
+	db := NewDB(t)
+	defer db.Close()
+
+	repo := NewQuestionRepository(db)
+	question := &domain.Question{
+		ID:        domain.NewUUID(),
+		UserID:    domain.NewUUID(),
+		Title:     "test",
+		Content:   "test",
+		CreatedAt: time.Now(),
+		Tags: []domain.Tag{
+			{
+				ID: "bc6c1c8d-9898-11ee-906b-0242ac120002",
+			},
+		},
+		Status: domain.QuestionStatusOpen,
+	}
+	_, err := repo.Create(question)
+	if err != nil {
+		t.Fatal(err)
+	}
 }

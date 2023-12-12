@@ -152,6 +152,54 @@ func (r *QuestionRepository) FindByID(id string) (*domain.Question, error) {
 	return result, nil
 }
 
+func (r *QuestionRepository) Create(question *domain.Question) (*domain.Question, error) {
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	// insert question
+	statusID, err := r.getStatusIDByName(string(question.Status))
+	if err != nil {
+		return nil, err
+	}
+	questionModel := Question{
+		ID:        question.ID,
+		UserID:    question.UserID,
+		Title:     question.Title,
+		Content:   question.Content,
+		CreatedAt: question.CreatedAt,
+		StatusID:  statusID,
+	}
+	_, err = tx.NamedExec("INSERT INTO questions (id, user_id, title, content, created_at, status_id) VALUES (:id, :user_id, :title, :content, :created_at, :status_id)", questionModel)
+	if err != nil {
+		return nil, err
+	}
+
+	// insert tags
+	for _, tag := range question.Tags {
+		// check tag exists
+		count := 0
+		err := tx.Get(&count, "SELECT COUNT(*) FROM tags WHERE id = ?", tag.ID)
+		if count == 0 {
+			return nil, errors.New("tag not found")
+		}
+
+		// insert question_tag
+		_, err = tx.Exec("INSERT INTO question_tags (question_id, tag_id) VALUES (?, ?)", question.ID, tag.ID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return question, nil
+}
+
 func (r *QuestionRepository) getAllStatuses() (map[int]string, error) {
 	statuses := make(map[int]string)
 	rows, err := r.db.Queryx("SELECT * FROM question_statuses")
@@ -168,6 +216,17 @@ func (r *QuestionRepository) getAllStatuses() (map[int]string, error) {
 		statuses[status.ID] = status.Name
 	}
 	return statuses, nil
+}
+
+func (r *QuestionRepository) getStatusIDByName(name string) (int, error) {
+	var status QuestionStatus
+	err := r.db.Get(&status, "SELECT * FROM question_statuses WHERE name = ?", name)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, nil
+	} else if err != nil {
+		return 0, err
+	}
+	return status.ID, nil
 }
 
 func fromQuestionModel(question Question, status string) *domain.Question {
