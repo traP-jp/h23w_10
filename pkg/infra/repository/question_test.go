@@ -35,6 +35,18 @@ func TestFindAllQuestions(t *testing.T) {
 	t.Logf("%+v", questions)
 }
 
+func TestFindQuestionsByTagID(t *testing.T) {
+	db := NewDB(t)
+	defer db.Close()
+
+	repo := NewQuestionRepository(db)
+	questions, err := repo.FindByTagID("bc6c1c8d-9898-11ee-906b-0242ac120002", 10, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("%+v", questions)
+}
+
 func TestFindQuestionByID(t *testing.T) {
 	db := NewDB(t)
 	defer db.Close()

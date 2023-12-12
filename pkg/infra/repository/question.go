@@ -45,71 +45,32 @@ type QuestionStatus struct {
 }
 
 func (r *QuestionRepository) Find(limit, offset int) ([]domain.Question, error) {
-	// get status
-	statuses, err := r.getAllStatuses()
-	if err != nil {
-		return nil, err
-	}
-
 	// get questions
-	questions := make(map[string]*domain.Question)
 	rows, err := r.db.Queryx("SELECT * FROM questions ORDER BY created_at DESC LIMIT ? OFFSET ?", limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var question Question
-	var ids []string
-	for rows.Next() {
-		err := rows.StructScan(&question)
-		if err != nil {
-			return nil, err
-		}
-		questions[question.ID] = fromQuestionModel(question, statuses[question.StatusID])
-		ids = append(ids, question.ID)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	if len(ids) == 0 {
-		return nil, nil
-	}
 
-	// get tags
-	query, params, err := sqlx.In("SELECT tags.id, tags.name, qt.question_id FROM tags INNER JOIN question_tags qt ON tags.id = qt.tag_id WHERE qt.question_id IN (?)", ids)
+	result, err := r.applyTags(rows)
 	if err != nil {
 		return nil, err
 	}
-	rows, err = r.db.Queryx(query, params...)
+
+	return result, nil
+}
+
+func (r *QuestionRepository) FindByTagID(tagID string, limit, offset int) ([]domain.Question, error) {
+	// get questions
+	rows, err := r.db.Queryx("SELECT q.* FROM questions q INNER JOIN question_tags qt ON q.id = qt.question_id WHERE qt.tag_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?", tagID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var (
-		tagID      string
-		tagName    string
-		questionID string
-	)
-	for rows.Next() {
-		err := rows.Scan(&tagID, &tagName, &questionID)
-		if err != nil {
-			return nil, err
-		}
-		questions[questionID].Tags = append(questions[questionID].Tags, domain.Tag{ID: tagID, Name: tagName})
-	}
-	if err := rows.Err(); err != nil {
+	result, err := r.applyTags(rows)
+	if err != nil {
 		return nil, err
 	}
-
-	// map to slice
-	result := make([]domain.Question, 0, len(questions))
-	for _, question := range questions {
-		result = append(result, *question)
-	}
-	// sort by created_at desc
-	slices.SortFunc(result, func(a, b domain.Question) int {
-		return b.CreatedAt.Compare(a.CreatedAt)
-	})
 
 	return result, nil
 }
@@ -198,6 +159,71 @@ func (r *QuestionRepository) Create(question *domain.Question) (*domain.Question
 	}
 
 	return question, nil
+}
+
+func (r *QuestionRepository) applyTags(questionRows *sqlx.Rows) ([]domain.Question, error) {
+	// get status
+	statuses, err := r.getAllStatuses()
+	if err != nil {
+		return nil, err
+	}
+
+	// get questions
+	questions := make(map[string]*domain.Question)
+	var ids []string
+	for questionRows.Next() {
+		var question Question
+		err := questionRows.StructScan(&question)
+		if err != nil {
+			return nil, err
+		}
+		questions[question.ID] = fromQuestionModel(question, statuses[question.StatusID])
+		ids = append(ids, question.ID)
+	}
+	if err := questionRows.Err(); err != nil {
+		return nil, err
+	}
+	if len(ids) == 0 {
+		return nil, nil
+	}
+
+	// get tags
+	query, params, err := sqlx.In("SELECT tags.id, tags.name, qt.question_id FROM tags INNER JOIN question_tags qt ON tags.id = qt.tag_id WHERE qt.question_id IN (?)", ids)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := r.db.Queryx(query, params...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var (
+		tagID      string
+		tagName    string
+		questionID string
+	)
+	for rows.Next() {
+		err := rows.Scan(&tagID, &tagName, &questionID)
+		if err != nil {
+			return nil, err
+		}
+		questions[questionID].Tags = append(questions[questionID].Tags, domain.Tag{ID: tagID, Name: tagName})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// map to slice
+	result := make([]domain.Question, 0, len(questions))
+	for _, question := range questions {
+		result = append(result, *question)
+	}
+	// sort by created_at desc
+	slices.SortFunc(result, func(a, b domain.Question) int {
+		return b.CreatedAt.Compare(a.CreatedAt)
+	})
+
+	return result, nil
 }
 
 func (r *QuestionRepository) getAllStatuses() (map[int]string, error) {
