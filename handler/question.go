@@ -13,7 +13,7 @@ import (
 	"github.com/traP-jp/h23w_10/pkg/domain/repository"
 )
 
-type GetQuestionsResponce struct {
+type GetQuestionsResponse struct {
 	ID        string       `json:"id,omitempty"`
 	UserID    string       `json:"user_id,omitempty"`
 	Title     string       `json:"title,omitempty"`
@@ -31,7 +31,7 @@ type PostQuestionRequest struct {
 	Status  string       `json:"status,omitempty"`
 }
 
-type PostQuestionResponce struct {
+type PostQuestionResponse struct {
 	ID        string       `json:"id,omitempty"`
 	UserID    string       `json:"user_id,omitempty"`
 	Title     string       `json:"title,omitempty"`
@@ -39,6 +39,15 @@ type PostQuestionResponce struct {
 	CreatedAt string       `json:"created_at,omitempty"`
 	Tags      []domain.Tag `json:"tags,omitempty"`
 	Status    string       `json:"status,omitempty"`
+}
+
+type PostTagRequest struct {
+	Name string
+}
+
+type PostTagResponse struct {
+	ID   string
+	Name string
 }
 
 func (h *Handler) GetQuestions(c echo.Context) error {
@@ -76,9 +85,9 @@ func (h *Handler) GetQuestions(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	response := make([]GetQuestionsResponce, len(questions))
+	response := make([]GetQuestionsResponse, len(questions))
 	for i, q := range questions {
-		response[i] = GetQuestionsResponce{
+		response[i] = GetQuestionsResponse{
 			ID:        q.ID,
 			UserID:    q.UserID,
 			Title:     q.Title,
@@ -128,7 +137,7 @@ func (h *Handler) PostQuestion(c echo.Context) error {
 		return err
 	}
 
-	responce := PostQuestionResponce{
+	response := PostQuestionResponse{
 		ID:        result.ID,
 		UserID:    result.UserID,
 		Title:     result.Title,
@@ -138,5 +147,28 @@ func (h *Handler) PostQuestion(c echo.Context) error {
 		Status:    string(result.Status),
 	}
 
-	return c.JSON(http.StatusOK, responce)
+	return c.JSON(http.StatusOK, response)
+}
+
+func (h *Handler) PostTag(c echo.Context) error {
+	var request PostTagRequest
+	if err := c.Bind(&request); err != nil {
+		return err
+	}
+
+	tag := &domain.Tag{
+		ID:   domain.NewUUID(),
+		Name: request.Name,
+	}
+	result, err := h.qrepo.CreateTag(tag)
+	if err != nil {
+		return err
+	}
+
+	response := PostTagResponse{
+		ID:   result.ID,
+		Name: result.Name,
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
