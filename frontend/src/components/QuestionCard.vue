@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card class="container">
     <v-card-title>
       <div>
         {{ props.question.title }}
@@ -31,10 +31,10 @@
 </template>
 
 <script setup lang="ts">
-import { type Question } from '@/lib/api'
 import { diffHuman } from '@/lib/format'
 import QuestionTag from './QuestionTag.vue'
 import QuestionStatus from './QuestionStatus.vue'
+import type { Question } from '@/lib/api/questions'
 
 export interface Props {
   question: Question
@@ -43,6 +43,9 @@ const props = defineProps<Props>()
 </script>
 
 <style scoped>
+.container {
+  width: 100%;
+}
 .info-container {
   width: 100%;
   display: flex;
