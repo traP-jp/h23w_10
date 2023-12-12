@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/traP-jp/h23w_10/pkg/domain"
 )
 
 type GetAnswersByQuestionIDResponse struct {
@@ -15,7 +16,22 @@ type GetAnswersByQuestionIDResponse struct {
 	CreatedAt  time.Time `json:"created_at"`
 }
 
-func (h Handler) GetAnswersByQuestionID(c echo.Context, questionID string) error {
+type PostAnswerRequest struct {
+	UserID     string `json:"user_id"`
+	QuestionID string `json:"question_id"`
+	Content    string `json:"content"`
+}
+
+type PostAnswerResponse struct {
+	ID         string    `json:"id"`
+	UserID     string    `json:"user_id"`
+	QuestionID string    `json:"title"`
+	Content    string    `json:"content"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+func (h *Handler) GetAnswersByQuestionID(c echo.Context) error {
+	questionID := c.Param("id")
 	answers, err := h.arepo.FindByQuestionID(questionID)
 	if err != nil {
 		return err
@@ -30,5 +46,34 @@ func (h Handler) GetAnswersByQuestionID(c echo.Context, questionID string) error
 			CreatedAt:  a.CreatedAt,
 		}
 	}
+	return c.JSON(http.StatusOK, response)
+}
+
+func (h *Handler) PostAnswer(c echo.Context) error {
+	var request PostAnswerRequest
+	if err := c.Bind(&request); err != nil {
+		return err
+	}
+
+	answer := &domain.Answer{
+		ID:         domain.NewUUID(),
+		UserID:     request.UserID,
+		QuestionID: request.QuestionID,
+		Content:    request.Content,
+		CreatedAt:  time.Now(),
+	}
+	result, err := h.arepo.Create(answer)
+	if err != nil {
+		return err
+	}
+
+	response := PostAnswerResponse{
+		ID:         result.ID,
+		UserID:     result.UserID,
+		QuestionID: result.QuestionID,
+		Content:    result.Content,
+		CreatedAt:  result.CreatedAt,
+	}
+
 	return c.JSON(http.StatusOK, response)
 }
