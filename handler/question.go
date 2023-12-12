@@ -24,8 +24,8 @@ type GetQuestionsResponse struct {
 }
 
 type GetTagsResponse struct {
-	ID   string
-	Name string
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 type PostQuestionRequest struct {
@@ -47,12 +47,12 @@ type PostQuestionResponse struct {
 }
 
 type PostTagRequest struct {
-	Name string
+	Name string `json:"name,omitempty"`
 }
 
 type PostTagResponse struct {
-	ID   string
-	Name string
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 func (h *Handler) GetQuestions(c echo.Context) error {

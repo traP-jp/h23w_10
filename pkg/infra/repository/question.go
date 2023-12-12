@@ -184,9 +184,7 @@ func (r *QuestionRepository) Create(question *domain.Question) (*domain.Question
 func (r *QuestionRepository) FindTags() ([]domain.Tag, error) {
 	var tags []Tag
 	err := r.db.Select(&tags, "SELECT * FROM tags")
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, repository.ErrNotFound
-	} else if err != nil {
+	if err != nil {
 		return nil, err
 	}
 
