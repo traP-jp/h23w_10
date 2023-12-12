@@ -8,6 +8,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/traP-jp/h23w_10/pkg/domain"
+	"github.com/traP-jp/h23w_10/pkg/domain/repository"
 )
 
 type QuestionRepository struct {
@@ -86,7 +87,7 @@ func (r *QuestionRepository) FindByID(id string) (*domain.Question, error) {
 	var question Question
 	err = r.db.Get(&question, "SELECT * FROM questions WHERE id = ?", id)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
+		return nil, repository.ErrNotFound
 	} else if err != nil {
 		return nil, err
 	}
