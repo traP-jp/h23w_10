@@ -27,3 +27,5 @@ export const getUser = async (req: GetUserRequest): Promise<GetUserResponse> => 
   const json: GetUserResponse = await res.json()
   return json
 }
+
+// TODO: PUT /users/:userId

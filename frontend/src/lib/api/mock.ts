@@ -1,3 +1,5 @@
+// モックデータ/関数をまとめたファイルです! 本番環境でこれらの値・関数を使用しないように注意してください!
+
 import type { Answer, PostAnswerRequest, PostAnswerResponse } from './answers'
 import type {
   GetQuestionRequest,
