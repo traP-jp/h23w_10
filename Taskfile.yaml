@@ -1,0 +1,18 @@
+version: '3'
+
+tasks:
+  server:
+    cmds:
+      - cd cmd/server && go run main.go
+  
+  migrate:
+    cmds:
+      - migrate --path db/migrations --database 'mysql://root:h23w10@tcp(localhost:3306)/h23w10' --verbose up
+
+  migrate-force:
+    cmds:
+      - migrate --path db/migrations --database 'mysql://root:h23w10@tcp(localhost:3306)/h23w10' --verbose force 1
+
+  migrate-down:
+    cmds:
+      - migrate --path db/migrations --database 'mysql://root:h23w10@tcp(localhost:3306)/h23w10' --verbose down
