@@ -3,7 +3,7 @@ version: '3'
 tasks:
   up:
     cmds:
-      - docker compose up -d
+      - docker compose up -d --build
 
   server:
     cmds:
@@ -20,3 +20,7 @@ tasks:
   migrate-down:
     cmds:
       - migrate --path db/migrations --database 'mysql://root:h23w10@tcp(localhost:3306)/h23w10' --verbose down
+
+  log:
+    cmds:
+      - docker compose logs -f server
