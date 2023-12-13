@@ -32,7 +32,7 @@ func main() {
 		panic(err)
 	}
 
-	h := handler.NewHandler(repository.NewQuestionRepository(db), repository.NewAnswerRepository(db))
+	h := handler.NewHandler(repository.NewQuestionRepository(db), repository.NewAnswerRepository(db), repository.NewUserRepository(db))
 
 	e := echo.New()
 	e.Use(middleware.Recover())
