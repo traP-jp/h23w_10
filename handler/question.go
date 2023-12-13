@@ -13,9 +13,20 @@ import (
 	"github.com/traP-jp/h23w_10/pkg/domain/repository"
 )
 
+type QuestionWithUser struct {
+	ID        string                `json:"id,omitempty"`
+	User      domain.User           `json:"user,omitempty"`
+	Title     string                `json:"title,omitempty"`
+	Content   string                `json:"content,omitempty"`
+	CreatedAt time.Time             `json:"created_at,omitempty"`
+	Tags      []domain.Tag          `json:"tags,omitempty"`
+	Answers   []domain.Answer       `json:"answers,omitempty"`
+	Status    domain.QuestionStatus `json:"status,omitempty"`
+}
+
 type GetQuestionsResponse struct {
-	Total     int               `json:"total,omitempty"`
-	Questions []domain.Question `json:"questions,omitempty"`
+	Total     int                `json:"total,omitempty"`
+	Questions []QuestionWithUser `json:"questions,omitempty"`
 }
 
 type GetTagsResponse struct {
@@ -93,9 +104,28 @@ func (h *Handler) GetQuestions(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
+
+	result := make([]QuestionWithUser, len(questions))
+	for i, q := range questions {
+		user, err := h.urepo.FindUserByID(q.UserID)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+		result[i] = QuestionWithUser{
+			ID:        q.ID,
+			User:      *user,
+			Title:     q.Title,
+			Content:   q.Content,
+			CreatedAt: q.CreatedAt,
+			Tags:      q.Tags,
+			Answers:   q.Answers,
+			Status:    q.Status,
+		}
+	}
+
 	response := GetQuestionsResponse{
 		Total:     total,
-		Questions: questions,
+		Questions: result,
 	}
 	return c.JSON(http.StatusOK, response)
 }
