@@ -45,38 +45,54 @@ type QuestionStatus struct {
 	Name string `db:"name"`
 }
 
-func (r *QuestionRepository) Find(condition *repository.FindQuestionsCondition) ([]domain.Question, error) {
+func (r *QuestionRepository) Find(condition *repository.FindQuestionsCondition) ([]domain.Question, int, error) {
 	statuses, err := r.getStatusIDs(condition.Statuses)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+	var count int
+	query, params, err := sqlx.In("SELECT COUNT(*) FROM questions WHERE status_id IN (?)", statuses)
+	if err != nil {
+		return nil, 0, err
+	}
+	if err := r.db.Get(&count, query, params...); err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, 0, err
 	}
 	// get questions
-	query, params, err := sqlx.In("SELECT * FROM questions WHERE status_id IN (?) ORDER BY created_at DESC LIMIT ? OFFSET ?",
+	query, params, err = sqlx.In("SELECT * FROM questions WHERE status_id IN (?) ORDER BY created_at DESC LIMIT ? OFFSET ?",
 		statuses,
 		condition.Limit,
 		condition.Offset,
 	)
 	rows, err := r.db.Queryx(query, params...)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 
 	result, err := r.applyTags(rows)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return result, nil
+	return result, count, nil
 }
 
-func (r *QuestionRepository) FindByTagID(tagID string, condition *repository.FindQuestionsCondition) ([]domain.Question, error) {
+func (r *QuestionRepository) FindByTagID(tagID string, condition *repository.FindQuestionsCondition) ([]domain.Question, int, error) {
 	statuses, err := r.getStatusIDs(condition.Statuses)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+	var count int
+	query, params, err := sqlx.In("SELECT COUNT(*) FROM questions q INNER JOIN question_tags qt ON q.id = qt.question_id WHERE qt.tag_id = ? AND q.status_id IN (?)", tagID, statuses)
+	if err != nil {
+		return nil, 0, err
+	}
+	if err := r.db.Get(&count, query, params...); err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, 0, err
 	}
 	// get questions
-	query, params, err := sqlx.In("SELECT q.* FROM questions q INNER JOIN question_tags qt ON q.id = qt.question_id WHERE qt.tag_id = ? AND q.status_id IN (?) ORDER BY created_at DESC LIMIT ? OFFSET ?",
+	query, params, err = sqlx.In("SELECT q.* FROM questions q INNER JOIN question_tags qt ON q.id = qt.question_id WHERE qt.tag_id = ? AND q.status_id IN (?) ORDER BY created_at DESC LIMIT ? OFFSET ?",
 		tagID,
 		statuses,
 		condition.Limit,
@@ -84,15 +100,15 @@ func (r *QuestionRepository) FindByTagID(tagID string, condition *repository.Fin
 	)
 	rows, err := r.db.Queryx(query, params...)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 	result, err := r.applyTags(rows)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return result, nil
+	return result, count, nil
 }
 
 func (r *QuestionRepository) FindByID(id string) (*domain.Question, error) {
