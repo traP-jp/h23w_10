@@ -70,7 +70,7 @@ func (r *QuestionRepository) Find(condition *repository.FindQuestionsCondition) 
 	}
 	defer rows.Close()
 
-	result, err := r.applyTags(rows)
+	result, err := r.fillTags(rows)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -103,7 +103,7 @@ func (r *QuestionRepository) FindByTagID(tagID string, condition *repository.Fin
 		return nil, 0, err
 	}
 	defer rows.Close()
-	result, err := r.applyTags(rows)
+	result, err := r.fillTags(rows)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -176,15 +176,7 @@ func (r *QuestionRepository) Create(question *domain.Question) (*domain.Question
 
 	// insert tags
 	for _, tag := range question.Tags {
-		// check tag exists
-		count := 0
-		err := tx.Get(&count, "SELECT COUNT(*) FROM tags WHERE id = ?", tag.ID)
-		if count == 0 {
-			return nil, errors.New("tag not found")
-		}
-
-		// insert question_tag
-		_, err = tx.Exec("INSERT INTO question_tags (question_id, tag_id) VALUES (?, ?)", question.ID, tag.ID)
+		err := r.addTag(tx, question.ID, tag.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -195,6 +187,50 @@ func (r *QuestionRepository) Create(question *domain.Question) (*domain.Question
 	}
 
 	return question, nil
+}
+
+func (r *QuestionRepository) Update(question *domain.Question) (*domain.Question, error) {
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	// update question
+	statusID, err := r.getStatusIDByName(string(question.Status))
+	if err != nil {
+		return nil, err
+	}
+	newQuestionModel := Question{
+		ID:       question.ID,
+		Title:    question.Title,
+		Content:  question.Content,
+		StatusID: statusID,
+	}
+	_, err = tx.NamedExec("UPDATE questions SET title = :title, content = :content, status_id = :status_id WHERE id = :id", newQuestionModel)
+	if err != nil {
+		return nil, err
+	}
+
+	// delete question_tags
+	_, err = tx.Exec("DELETE FROM question_tags WHERE question_id = ?", question.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// insert tags
+	for _, tag := range question.Tags {
+		err := r.addTag(tx, question.ID, tag.ID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }
 
 func (r *QuestionRepository) FindTags() ([]domain.Tag, error) {
@@ -252,7 +288,7 @@ func (r *QuestionRepository) getStatusIDs(statuses []domain.QuestionStatus) ([]i
 	return statusIDs, nil
 }
 
-func (r *QuestionRepository) applyTags(questionRows *sqlx.Rows) ([]domain.Question, error) {
+func (r *QuestionRepository) fillTags(questionRows *sqlx.Rows) ([]domain.Question, error) {
 	// get status
 	statuses, err := r.getAllStatuses()
 	if err != nil {
@@ -315,6 +351,23 @@ func (r *QuestionRepository) applyTags(questionRows *sqlx.Rows) ([]domain.Questi
 	})
 
 	return result, nil
+}
+
+func (r *QuestionRepository) addTag(tx *sqlx.Tx, questionID string, tagID string) error {
+	// check tag exists
+	count := 0
+	err := tx.Get(&count, "SELECT COUNT(*) FROM tags WHERE id = ?", tagID)
+	if count == 0 {
+		return repository.ErrTagNotFound
+	}
+
+	// insert question_tag
+	_, err = tx.Exec("INSERT INTO question_tags (question_id, tag_id) VALUES (?, ?)", questionID, tagID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *QuestionRepository) getAllStatuses() (map[int]string, error) {
