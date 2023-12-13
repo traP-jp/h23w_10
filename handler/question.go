@@ -41,7 +41,7 @@ type PostQuestionResponse struct {
 	Status    string       `json:"status,omitempty"`
 }
 
-type UpdateQuestionRequest struct {
+type PutQuestionRequest struct {
 	ID      string       `json:"id,omitempty"`
 	Title   string       `json:"title,omitempty"`
 	Content string       `json:"content,omitempty"`
@@ -117,8 +117,8 @@ func (h *Handler) GetQuestionByID(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func (h *Handler) UpdateQuestion(c echo.Context) error {
-	var req UpdateQuestionRequest
+func (h *Handler) PutQuestion(c echo.Context) error {
+	var req PutQuestionRequest
 	if err := c.Bind(&req); err != nil {
 		return err
 	}
