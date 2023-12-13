@@ -8,6 +8,7 @@ type QuestionRepository interface {
 	FindByID(id string) (*domain.Question, error)
 	FindByTagID(tagID string, condition *FindQuestionsCondition) ([]domain.Question, int, error)
 	FindTags() ([]domain.Tag, error)
+	FindUserByID(userID string) (*domain.User, error)
 	Create(question *domain.Question) (*domain.Question, error)
 	CreateTag(tag *domain.Tag) (*domain.Tag, error)
 }

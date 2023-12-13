@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -21,6 +22,13 @@ type GetQuestionsResponse struct {
 type GetTagsResponse struct {
 	ID   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
+}
+
+type GetUserByIDResponse struct {
+	ID       string          `json:"id,omitempty"`
+	Name     string          `json:"name,omitempty"`
+	IconURL  url.URL         `json:"icon_url,omitempty"`
+	UserType domain.UserType `json:"user_type,omitempty"`
 }
 
 type PostQuestionRequest struct {
@@ -121,6 +129,22 @@ func (h *Handler) GetTags(c echo.Context) error {
 			ID:   t.ID,
 			Name: t.Name,
 		}
+	}
+	return c.JSON(http.StatusOK, response)
+}
+
+func (h *Handler) GetUserByID(c echo.Context) error {
+	id := c.Param("id")
+	user, err := h.qrepo.FindUserByID(id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	response := GetUserByIDResponse{
+		ID:       user.ID,
+		Name:     user.Name,
+		IconURL:  user.IconURL,
+		UserType: user.UserType,
 	}
 	return c.JSON(http.StatusOK, response)
 }

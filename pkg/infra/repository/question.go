@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"net/url"
 	"slices"
 	"time"
 
@@ -43,6 +44,13 @@ type QuestionTag struct {
 type QuestionStatus struct {
 	ID   int    `db:"id"`
 	Name string `db:"name"`
+}
+
+type User struct {
+	ID       string `db:"id"`
+	Name     string `db:"name"`
+	IconURL  string `db:"icon_url"`
+	UserType string `db:"user_type"`
 }
 
 func (r *QuestionRepository) Find(condition *repository.FindQuestionsCondition) ([]domain.Question, int, error) {
@@ -212,6 +220,27 @@ func (r *QuestionRepository) FindTags() ([]domain.Tag, error) {
 		}
 	}
 	return result, nil
+}
+
+func (r *QuestionRepository) FindUserByID(id string) (*domain.User, error) {
+	var user User
+	err := r.db.Get(&user, "SELECT * FROM users WHERE id = ?", id)
+	if err != nil {
+		return nil, err
+	}
+
+	url, err := url.Parse(user.IconURL)
+	if err != nil {
+		return nil, err
+	}
+
+	result := domain.User{
+		ID:       user.ID,
+		Name:     user.Name,
+		IconURL:  *url,
+		UserType: domain.UserType(user.UserType),
+	}
+	return &result, nil
 }
 
 func (r *QuestionRepository) CreateTag(tag *domain.Tag) (*domain.Tag, error) {
