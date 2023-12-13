@@ -1,14 +1,10 @@
-<script setup lang="ts">
-import { RouterView } from 'vue-router'
-</script>
-
 <template>
   <div>
     <header>
       <div class="wrapper">
         <nav>
           <RouterLink to="/">Home</RouterLink> |
-          <RouterLink to="/about">About</RouterLink>
+          <RouterLink :to="'/questions/' + id">Question</RouterLink>
         </nav>
       </div>
     </header>
@@ -17,5 +13,19 @@ import { RouterView } from 'vue-router'
     </Suspense>
   </div>
 </template>
+<script lang="ts">
+import { RouterView } from 'vue-router'
+export default {
+  name: 'App',
+  components: {
+    RouterView
+  },
+  data() {
+    return {
+      id: 1
+    }
+  }
+}
+</script>
 
 <style scoped></style>
