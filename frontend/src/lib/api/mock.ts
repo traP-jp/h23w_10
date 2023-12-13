@@ -37,16 +37,16 @@ const answers: Answer[] = []
 const users: User[] = []
 const questions: Question[] = new Array(100)
   .fill({
-    userId: crypto.randomUUID(),
     content: 'テストの質問です',
     createdAt: new Date(2023, 11, 13)
   } satisfies Partial<Question>)
   .map<Question>((question, i) => {
-    const id = crypto.randomUUID()
+    const id = `test-question-${i}`
     return {
       ...question,
       id,
       title: `テストの質問${i}`,
+      userId: crypto.randomUUID(),
       tags: randomChoice(tags, Math.floor(Math.random() * 3)),
       answers: new Array(Math.floor(Math.random() * 10)).fill({
         id: crypto.randomUUID(),
