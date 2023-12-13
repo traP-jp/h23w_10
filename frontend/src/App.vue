@@ -1,15 +1,15 @@
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">Home</RouterLink> | <RouterLink to="/about">About</RouterLink> |
-        <RouterLink :to="'/questions/' + id">Question</RouterLink>
-      </nav>
-    </div>
+  <div>
+    <header>
+      <div class="wrapper">
+        <nav>
+          <RouterLink to="/">Home</RouterLink> |
+          <RouterLink :to="'/questions/' + id">Question</RouterLink>
+        </nav>
+      </div>
+    </header>
     <RouterView />
-  </header>
+  </div>
 </template>
 <script lang="ts">
 import { RouterView } from 'vue-router'
