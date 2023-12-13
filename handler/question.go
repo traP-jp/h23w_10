@@ -182,7 +182,7 @@ func (h *Handler) PostTag(c echo.Context) error {
 	}
 	result, err := h.qrepo.CreateTag(tag)
 	if errors.Is(err, repository.ErrTagAlreadyExists) {
-		return c.NoContent(http.StatusOK)
+		return echo.NewHTTPError(http.StatusBadRequest, repository.ErrTagAlreadyExists)
 	} else if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
