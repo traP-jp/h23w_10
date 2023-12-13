@@ -6,6 +6,9 @@ import (
 	"time"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/golang-migrate/migrate/v4"
+	mysql_migrate "github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -16,6 +19,17 @@ import (
 func main() {
 	db := ConnectDB()
 	defer db.Close()
+	driver, err := mysql_migrate.WithInstance(db.DB, &mysql_migrate.Config{})
+	if err != nil {
+		panic(err)
+	}
+	m, err := migrate.NewWithDatabaseInstance("file:///db/migrations", "mysql", driver)
+	if err != nil {
+		panic(err)
+	}
+	if err := m.Up(); err != nil {
+		panic(err)
+	}
 
 	h := handler.NewHandler(repository.NewQuestionRepository(db), repository.NewAnswerRepository(db))
 
@@ -38,6 +52,8 @@ func main() {
 }
 
 func ConnectDB() *sqlx.DB {
+	// wait for mysql
+	time.Sleep(10 * time.Second)
 	jst, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
 		panic(err)
@@ -50,6 +66,7 @@ func ConnectDB() *sqlx.DB {
 		DBName:               getEnvOrDefault("MYSQL_DATABASE", "h23w10"),
 		Loc:                  jst,
 		AllowNativePasswords: true,
+		MultiStatements:      true,
 		ParseTime:            true,
 	}
 	db, err := sqlx.Open("mysql", config.FormatDSN())
