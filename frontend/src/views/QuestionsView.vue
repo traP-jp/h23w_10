@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div :class="$style.container">
     <v-autocomplete
       label="filter by tag"
       :items="tags"
@@ -8,7 +8,7 @@
       item-value="id"
       clearable
     />
-    <div v-if="!loading" class="questions">
+    <div v-if="!loading" :class="$style.questions">
       <QuestionCard v-for="question in data.questions" :key="question.id" :question="question" />
       <!-- todo: 検索結果0件の時のfallback -->
     </div>
@@ -111,10 +111,12 @@ watch(
 )
 </script>
 
-<style scoped>
+<style module>
 .container {
-  width: 100%;
-  max-width: 1000px;
+  width: 80%;
+  margin: auto;
+  padding-top: 24px;
+  padding-bottom: 50px;
 }
 .questions {
   display: flex;
