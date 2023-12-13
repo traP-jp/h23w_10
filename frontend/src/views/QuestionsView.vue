@@ -1,13 +1,24 @@
 <template>
   <div :class="$style.container">
-    <v-autocomplete
-      label="filter by tag"
-      :items="tags"
-      v-model="req.tag"
-      item-title="name"
-      item-value="id"
-      clearable
-    />
+    <div :class="$style.filterContainer">
+      <v-select
+        label="filter by status"
+        clearable
+        :items="[
+          { title: '解決済み', value: 'closed' },
+          { title: '回答受付中', value: 'open' }
+        ]"
+        v-model="req.status"
+      />
+      <v-autocomplete
+        label="filter by tag"
+        :items="tags"
+        v-model="req.tag"
+        item-title="name"
+        item-value="id"
+        clearable
+      />
+    </div>
     <div v-if="!loading" :class="$style.questions">
       <QuestionCard v-for="question in data.questions" :key="question.id" :question="question" />
       <!-- todo: 検索結果0件の時のfallback -->
@@ -117,6 +128,19 @@ watch(
   margin: auto;
   padding-top: 24px;
   padding-bottom: 50px;
+}
+.filterContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+@media screen and (max-width: 600px) {
+  .filterContainer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
 }
 .questions {
   display: flex;

@@ -38,8 +38,7 @@ const questions: Question[] = new Array(100)
   .fill({
     userId: crypto.randomUUID(),
     content: 'テストの質問です',
-    createdAt: new Date(2023, 11, 13),
-    status: 'open'
+    createdAt: new Date(2023, 11, 13)
   } satisfies Partial<Question>)
   .map<Question>((question, i) => {
     const id = crypto.randomUUID()
@@ -53,7 +52,8 @@ const questions: Question[] = new Array(100)
         questionId: id,
         content: 'テストの回答です',
         userId: crypto.randomUUID()
-      } satisfies Omit<Answer, 'createdAt'>)
+      } satisfies Omit<Answer, 'createdAt'>),
+      status: Math.random() < 0.5 ? 'open' : 'closed'
     }
   })
 
