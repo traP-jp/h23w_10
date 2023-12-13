@@ -20,9 +20,9 @@ func (h *Handler) GetUserByID(c echo.Context) error {
 	id := c.Param("id")
 	user, err := h.urepo.FindUserByID(id)
 	if errors.Is(err, repository.ErrNotFound) {
-		return c.JSON(http.StatusNotFound, err)
+		return c.JSON(http.StatusNotFound, err.Error())
 	} else if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	response := GetUserByIDResponse{
