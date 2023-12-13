@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net"
 	"os"
 	"time"
@@ -27,7 +28,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	if err := m.Up(); err != nil {
+	if err := m.Up(); err != nil && errors.Is(err, migrate.ErrNoChange) {
 		panic(err)
 	}
 
