@@ -20,9 +20,15 @@
             <question-status :status="props.question.status" />
             {{ props.question.answers.length }}件の回答
           </div>
-          <div :class="$style.status">
+          <div :class="`${$style.status} text-caption`">
             {{ props.question.userId }}
-            {{ diffHuman(props.question.createdAt).diff }}
+            <v-tooltip :text="diffHuman(props.question.createdAt).localeString" location="top">
+              <template v-slot:activator="{ props: tooltipProps }">
+                <span v-bind="tooltipProps">
+                  {{ diffHuman(props.question.createdAt).diff }}
+                </span>
+              </template>
+            </v-tooltip>
           </div>
         </div>
       </div>
@@ -66,5 +72,6 @@ const props = defineProps<Props>()
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
 }
 </style>
