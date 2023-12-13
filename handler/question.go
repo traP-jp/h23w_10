@@ -41,6 +41,14 @@ type PostQuestionResponse struct {
 	Status    string       `json:"status,omitempty"`
 }
 
+type PutQuestionRequest struct {
+	ID      string       `json:"id,omitempty"`
+	Title   string       `json:"title,omitempty"`
+	Content string       `json:"content,omitempty"`
+	Tags    []domain.Tag `json:"tags,omitempty"`
+	Status  string       `json:"status,omitempty"`
+}
+
 type PostTagRequest struct {
 	Name string `json:"name,omitempty"`
 }
@@ -107,6 +115,29 @@ func (h *Handler) GetQuestionByID(c echo.Context) error {
 	}
 	response.Answers = answers
 	return c.JSON(http.StatusOK, response)
+}
+
+func (h *Handler) PutQuestion(c echo.Context) error {
+	var req PutQuestionRequest
+	if err := c.Bind(&req); err != nil {
+		return err
+	}
+
+	question := &domain.Question{
+		ID:      req.ID,
+		Title:   req.Title,
+		Content: req.Content,
+		Tags:    req.Tags,
+		Status:  domain.QuestionStatus(req.Status),
+	}
+	_, err := h.qrepo.Update(question)
+	if errors.Is(err, repository.ErrTagNotFound) {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	} else if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.NoContent(http.StatusNoContent)
 }
 
 func (h *Handler) GetTags(c echo.Context) error {

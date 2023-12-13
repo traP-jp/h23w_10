@@ -51,6 +51,7 @@ func main() {
 	e.GET("/questions", h.GetQuestions)
 	e.POST("/questions", h.PostQuestion)
 	e.GET("/questions/:id", h.GetQuestionByID)
+	e.PUT("/questions/:id", h.PutQuestion)
 	e.POST("/questions/:id/answers", h.PostAnswer)
 	e.GET("/tags", h.GetTags)
 	e.POST("/tags", h.PostTag)

@@ -3,7 +3,7 @@ package repository
 import "testing"
 
 func TestFindAnswersByQuestionID(t *testing.T) {
-	db := NewDB(t)
+	db := newDB(t)
 	defer db.Close()
 
 	repo := NewAnswerRepository(db)

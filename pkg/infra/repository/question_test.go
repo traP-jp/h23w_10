@@ -11,8 +11,9 @@ import (
 
 // 流れを確認するためのテスト
 func TestQuestionRepository(t *testing.T) {
-	db := NewDB(t)
+	db := newDB(t)
 	defer db.Close()
+	defer cleanTables(t)
 
 	repo := NewQuestionRepository(db)
 
@@ -116,6 +117,30 @@ func TestQuestionRepository(t *testing.T) {
 		}
 		if count != 0 {
 			t.Errorf("count = %d, want %d", count, 0)
+		}
+	})
+
+	// Update Question
+	t.Run("Update Question", func(t *testing.T) {
+		q, err := repo.FindByID(questionID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("question: %+v", q)
+		q.Title = "updated title"
+		q.Content = "updated content"
+		q.Status = domain.QuestionStatusClosed
+		_, err = repo.Update(q)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		q, err = repo.FindByID(questionID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if q.Title != "updated title" || q.Content != "updated content" || q.Status != domain.QuestionStatusClosed {
+			t.Errorf("invalid question: %+v", q)
 		}
 	})
 }
