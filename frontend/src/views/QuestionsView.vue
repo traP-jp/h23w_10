@@ -19,11 +19,18 @@
         clearable
       />
     </div>
-    <div v-if="!loading" :class="$style.questions">
+    <div
+      v-if="data.questions"
+      :class="[
+        $style.questions,
+        {
+          [$style.loading]: loading
+        }
+      ]"
+    >
       <QuestionCard v-for="question in data.questions" :key="question.id" :question="question" />
-      <!-- todo: 検索結果0件の時のfallback -->
+      <div v-if="data.questions.length === 0">条件に一致する質問が見つかりませんでした</div>
     </div>
-    <!-- todo: loading時のlayout shift対策 -->
     <div v-else>Loading...</div>
     <v-pagination v-model="req.page" :length="Math.ceil(data.total / limit)" :total-visible="9" />
   </div>
@@ -33,9 +40,7 @@
 import QuestionCard from '@/components/QuestionCard.vue'
 import { getQuestions, type GetQuestionsResponse, type QuestionStatus } from '@/lib/api/questions'
 import { getTags, type Tag } from '@/lib/api/tags'
-import { watch } from 'vue'
-import { reactive } from 'vue'
-import { ref } from 'vue'
+import { watch, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 const limit = 10
@@ -50,8 +55,11 @@ type Req = {
 
 const loading = ref(false)
 
-const data = ref<GetQuestionsResponse>({
-  questions: [],
+const data = ref<{
+  questions: GetQuestionsResponse['questions'] | undefined
+  total: GetQuestionsResponse['total']
+}>({
+  questions: undefined,
   total: 0
 })
 const req = reactive<Req>({
@@ -128,6 +136,9 @@ watch(
   margin: auto;
   padding-top: 24px;
   padding-bottom: 50px;
+}
+.loading {
+  opacity: 0.5;
 }
 .filterContainer {
   display: flex;
