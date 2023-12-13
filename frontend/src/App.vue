@@ -1,29 +1,29 @@
 <template>
-  <div>
-    <header>
-      <div class="wrapper">
-        <nav>
-          <RouterLink to="/">Home</RouterLink> |
-          <RouterLink :to="'/questions/' + id">Question</RouterLink>
-        </nav>
-      </div>
-    </header>
-    <RouterView />
-  </div>
+  <v-app>
+    <v-navigation-drawer v-model="showDrawer" app>
+      <v-list-item href="/" title="Top" />
+      <v-list-item href="/questions" title="Questions" />
+      <v-list-item href="/questions/new" title="Post Question" />
+    </v-navigation-drawer>
+    <v-app-bar>
+      <v-app-bar-nav-icon @click="toggleDrawer" />
+      <v-app-bar-title>staQoverflow</v-app-bar-title>
+      <!-- todo: add user icon / login button -->
+    </v-app-bar>
+    <v-main>
+      <Suspense>
+        <RouterView />
+      </Suspense>
+    </v-main>
+  </v-app>
 </template>
-<script lang="ts">
+
+<script setup lang="ts">
 import { RouterView } from 'vue-router'
-export default {
-  name: 'App',
-  components: {
-    RouterView
-  },
-  data() {
-    return {
-      id: 1
-    }
-  }
-}
+import { ref } from 'vue'
+
+const showDrawer = ref(false)
+const toggleDrawer = () => (showDrawer.value = !showDrawer.value)
 </script>
 
 <style scoped></style>
