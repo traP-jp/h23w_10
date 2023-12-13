@@ -1,10 +1,13 @@
 package repository
 
 import (
+	"database/sql"
+	"errors"
 	"net/url"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/traP-jp/h23w_10/pkg/domain"
+	"github.com/traP-jp/h23w_10/pkg/domain/repository"
 )
 
 type UserRepository struct {
@@ -27,7 +30,9 @@ type User struct {
 func (r *UserRepository) FindUserByID(id string) (*domain.User, error) {
 	var user User
 	err := r.db.Get(&user, "SELECT * FROM users WHERE id = ?", id)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, repository.ErrNotFound
+	} else if err != nil {
 		return nil, err
 	}
 
