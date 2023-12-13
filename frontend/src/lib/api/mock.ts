@@ -31,6 +31,7 @@ const randomChoice = <T>(arr: T[], count: number): T[] => {
   const copy = [...arr]
   return copy.sort(() => Math.random() - 0.5).slice(0, count)
 }
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const answers: Answer[] = []
 const users: User[] = []
@@ -61,6 +62,7 @@ const questions: Question[] = new Array(100)
  * **モックAPI**です! 代わりに`getQuestions` (/src/lib/api/questions.ts)を使ってください。(開発環境では勝手にモックが使用されます)
  */
 export const getQuestionsMock = async (req: GetQuestionsRequest): Promise<GetQuestionsResponse> => {
+  await sleep(1000)
   const ret = questions.filter((question) => {
     let flag = true
     if (req.tag) {
@@ -81,6 +83,7 @@ export const getQuestionsMock = async (req: GetQuestionsRequest): Promise<GetQue
  * **モックAPI**です! 代わりに`getQuestion` (/src/lib/api/questions.ts)を使ってください。(開発環境では勝手にモックが使用されます)
  */
 export const getQuestionMock = async (req: GetQuestionRequest): Promise<GetQuestionResponse> => {
+  await sleep(1000)
   const ret = questions.find((question) => question.id === req.id)
   if (!ret) {
     throw new Error('Not found')
@@ -92,6 +95,7 @@ export const getQuestionMock = async (req: GetQuestionRequest): Promise<GetQuest
  * **モックAPI**です! 代わりに`postQuestion` (/src/lib/api/questions.ts)を使ってください。(開発環境では勝手にモックが使用されます)
  */
 export const postQuestionMock = async (req: PostQuestionRequest): Promise<PostQuestionResponse> => {
+  await sleep(1000)
   const question: Question = {
     ...req,
     id: crypto.randomUUID(),
@@ -112,6 +116,7 @@ export const postQuestionMock = async (req: PostQuestionRequest): Promise<PostQu
  * **モックAPI**です! 代わりに`postAnswer` (/src/lib/api/answers.ts)を使ってください。(開発環境では勝手にモックが使用されます)
  */
 export const postAnswerMock = async (req: PostAnswerRequest): Promise<PostAnswerResponse> => {
+  await sleep(1000)
   const answer: Answer = {
     ...req,
     id: crypto.randomUUID(),
@@ -127,6 +132,7 @@ export const postAnswerMock = async (req: PostAnswerRequest): Promise<PostAnswer
  * **モックAPI**です! 代わりに`getTags` (/src/lib/api/tags.ts)を使ってください。(開発環境では勝手にモックが使用されます)
  */
 export const getTagsMock = async (_req?: GetTagsRequest): Promise<GetTagsResponse> => {
+  await sleep(1000)
   return tags
 }
 
@@ -134,6 +140,7 @@ export const getTagsMock = async (_req?: GetTagsRequest): Promise<GetTagsRespons
  * **モックAPI**です! 代わりに`postTag` (/src/lib/api/tags.ts)を使ってください。(開発環境では勝手にモックが使用されます)
  */
 export const postTagMock = async (req: PostTagRequest): Promise<PostTagResponse> => {
+  await sleep(1000)
   const tag: Tag = {
     id: crypto.randomUUID(),
     name: req.name
@@ -143,6 +150,7 @@ export const postTagMock = async (req: PostTagRequest): Promise<PostTagResponse>
 }
 
 export const getUserMock = async (req: GetUserRequest): Promise<GetUserResponse> => {
+  await sleep(1000)
   const user = users.find((user) => user.id === req.id)
   if (!user) {
     throw new Error('Not found')
