@@ -14,13 +14,8 @@ import (
 )
 
 type GetQuestionsResponse struct {
-	ID        string       `json:"id,omitempty"`
-	UserID    string       `json:"user_id,omitempty"`
-	Title     string       `json:"title,omitempty"`
-	Content   string       `json:"content,omitempty"`
-	CreatedAt string       `json:"created_at,omitempty"`
-	Tags      []domain.Tag `json:"tags,omitempty"`
-	Status    string       `json:"status,omitempty"`
+	Total     int               `json:"total,omitempty"`
+	Questions []domain.Question `json:"questions,omitempty"`
 }
 
 type GetTagsResponse struct {
@@ -80,26 +75,19 @@ func (h *Handler) GetQuestions(c echo.Context) error {
 
 	tag := c.QueryParam("tag")
 	var questions []domain.Question
+	var total int
 	var err error
 	if tag != "" {
-		questions, err = h.qrepo.FindByTagID(tag, condition)
+		questions, total, err = h.qrepo.FindByTagID(tag, condition)
 	} else {
-		questions, err = h.qrepo.Find(condition)
+		questions, total, err = h.qrepo.Find(condition)
 	}
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	response := make([]GetQuestionsResponse, len(questions))
-	for i, q := range questions {
-		response[i] = GetQuestionsResponse{
-			ID:        q.ID,
-			UserID:    q.UserID,
-			Title:     q.Title,
-			Content:   q.Content,
-			CreatedAt: q.CreatedAt.String(),
-			Tags:      q.Tags,
-			Status:    string(q.Status),
-		}
+	response := GetQuestionsResponse{
+		Total:     total,
+		Questions: questions,
 	}
 	return c.JSON(http.StatusOK, response)
 }
