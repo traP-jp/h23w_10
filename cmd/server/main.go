@@ -23,7 +23,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	m, err := migrate.NewWithDatabaseInstance("file:///db/migrations", "mysql", driver)
+	m, err := migrate.NewWithDatabaseInstance("file://db/migrations", "mysql", driver)
 	if err != nil {
 		panic(err)
 	}
@@ -62,7 +62,7 @@ func ConnectDB() *sqlx.DB {
 		User:                 getEnvOrDefault("MYSQL_USER", "root"),
 		Passwd:               getEnvOrDefault("MYSQL_PASSWORD", "h23w10"),
 		Net:                  "tcp",
-		Addr:                 net.JoinHostPort(getEnvOrDefault("MYSQL_HOST", "localhost"), getEnvOrDefault("MYSQL_PORT", "3306")),
+		Addr:                 net.JoinHostPort(getEnvOrDefault("MYSQL_HOST", "db"), getEnvOrDefault("MYSQL_PORT", "3306")),
 		DBName:               getEnvOrDefault("MYSQL_DATABASE", "h23w10"),
 		Loc:                  jst,
 		AllowNativePasswords: true,
