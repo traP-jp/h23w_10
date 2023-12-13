@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"errors"
 	"net"
 	"os"
@@ -10,7 +11,9 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	mysql_migrate "github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/gorilla/sessions"
 	"github.com/jmoiron/sqlx"
+	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/traP-jp/h23w_10/handler"
@@ -32,11 +35,14 @@ func main() {
 		panic(err)
 	}
 
+	sessionSecret, err := hex.DecodeString(getEnvOrDefault("SESSION_SECRET", "12345678"))
+
 	h := handler.NewHandler(repository.NewQuestionRepository(db), repository.NewAnswerRepository(db), repository.NewUserRepository(db))
 
 	e := echo.New()
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
+	e.Use(session.Middleware(sessions.NewCookieStore(sessionSecret)))
 
 	e.GET("/health", func(c echo.Context) error {
 		return c.String(200, "OK")
@@ -48,7 +54,7 @@ func main() {
 	e.POST("/questions/:id/answers", h.PostAnswer)
 	e.GET("/tags", h.GetTags)
 	e.POST("/tags", h.PostTag)
-	e.GET("/user/:id", h.GetUserByID)
+	e.GET("/users/:id", h.GetUserByID)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
