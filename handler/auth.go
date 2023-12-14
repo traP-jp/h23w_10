@@ -26,7 +26,7 @@ func (h *Handler) GetAuthParams(c echo.Context) error {
 
 	url := h.oauth2Config.AuthCodeURL(hexState)
 
-	return c.String(http.StatusOK, url)
+	return c.JSON(http.StatusOK, map[string]string{"url": url})
 }
 
 // TODO: traqのgetmeを叩いて、ユーザー情報をdbに保存する
