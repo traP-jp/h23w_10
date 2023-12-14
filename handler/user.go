@@ -11,17 +11,19 @@ import (
 )
 
 type GetUserByIDResponse struct {
-	ID       string          `json:"id,omitempty"`
-	Name     string          `json:"name,omitempty"`
-	IconURL  string          `json:"icon_url,omitempty"`
-	UserType domain.UserType `json:"user_type,omitempty"`
+	ID          string          `json:"id,omitempty"`
+	Name        string          `json:"name,omitempty"`
+	DisplayName string          `json:"display_name,omitempty"`
+	IconURL     string          `json:"icon_url,omitempty"`
+	UserType    domain.UserType `json:"user_type,omitempty"`
 }
 
 type GetMeResponse struct {
-	ID       string          `json:"id,omitempty"`
-	Name     string          `json:"name,omitempty"`
-	IconURL  string          `json:"icon_url,omitempty"`
-	UserType domain.UserType `json:"user_type,omitempty"`
+	ID          string          `json:"id,omitempty"`
+	Name        string          `json:"name,omitempty"`
+	DisplayName string          `json:"display_name,omitempty"`
+	IconURL     string          `json:"icon_url,omitempty"`
+	UserType    domain.UserType `json:"user_type,omitempty"`
 }
 
 func (h *Handler) GetUserMe(c echo.Context) error {
@@ -39,10 +41,11 @@ func (h *Handler) GetUserMe(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	response := GetMeResponse{
-		ID:       user.ID,
-		Name:     user.Name,
-		IconURL:  user.IconURL.String(),
-		UserType: user.UserType,
+		ID:          user.ID,
+		Name:        user.Name,
+		DisplayName: user.DisplayName,
+		IconURL:     user.IconURL.String(),
+		UserType:    user.UserType,
 	}
 	return c.JSON(http.StatusOK, response)
 }
@@ -57,10 +60,11 @@ func (h *Handler) GetUserByID(c echo.Context) error {
 	}
 
 	response := GetUserByIDResponse{
-		ID:       user.ID,
-		Name:     user.Name,
-		IconURL:  user.IconURL.String(),
-		UserType: user.UserType,
+		ID:          user.ID,
+		Name:        user.Name,
+		DisplayName: user.DisplayName,
+		IconURL:     user.IconURL.String(),
+		UserType:    user.UserType,
 	}
 	return c.JSON(http.StatusOK, response)
 }
