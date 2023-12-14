@@ -82,6 +82,8 @@ github.com/sirupsen/logrus v1.9.2 h1:oxx1eChJGI6Uks2ZC4W1zpLlVgqB8ner4EuQwV4Ik1Y
 github.com/sirupsen/logrus v1.9.2/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
+github.com/traPtitech/go-traq v0.0.0-20231208054503-2e91b85cdb2e h1:B4SK7zeJ+8hNIlg+x7n0BnwTEVpTbcJjutd7jnbp4vs=
+github.com/traPtitech/go-traq v0.0.0-20231208054503-2e91b85cdb2e/go.mod h1:4kOuFQDQ6M35pt3FVx40Gz0MXXGBVsgGlEDphe1nbJY=
 github.com/traPtitech/go-traq-oauth2 v0.0.0-20231128211850-d34d8c287ff9 h1:UI9iB5A1DYvCnpYPMB7v5iHaqVFbIfnL3DV8fL21TnQ=
 github.com/traPtitech/go-traq-oauth2 v0.0.0-20231128211850-d34d8c287ff9/go.mod h1:oJC8M9AKLYATgIXXsjsdL+W1LaralZMinsovKpDYRgU=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
