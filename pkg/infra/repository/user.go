@@ -21,10 +21,11 @@ func NewUserRepository(db *sqlx.DB) *UserRepository {
 }
 
 type User struct {
-	ID       string `db:"id"`
-	Name     string `db:"name"`
-	IconURL  string `db:"icon_url"`
-	UserType string `db:"user_type"`
+	ID          string `db:"id"`
+	Name        string `db:"name"`
+	DisplayName string `db:"display_name"`
+	IconURL     string `db:"icon_url"`
+	UserType    string `db:"user_type"`
 }
 
 func (r *UserRepository) FindUserByID(id string) (*domain.User, error) {
@@ -42,10 +43,11 @@ func (r *UserRepository) FindUserByID(id string) (*domain.User, error) {
 	}
 
 	result := domain.User{
-		ID:       user.ID,
-		Name:     user.Name,
-		IconURL:  *url,
-		UserType: domain.UserType(user.UserType),
+		ID:          user.ID,
+		Name:        user.Name,
+		DisplayName: user.DisplayName,
+		IconURL:     *url,
+		UserType:    domain.UserType(user.UserType),
 	}
 	return &result, nil
 }
