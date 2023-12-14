@@ -4,10 +4,13 @@ import (
 	"encoding/gob"
 
 	"github.com/traP-jp/h23w_10/pkg/domain/repository"
+	"github.com/traP-jp/h23w_10/pkg/infra/trap"
 	"golang.org/x/oauth2"
 )
 
 type Handler struct {
+	trapSvc *trap.TrapService
+
 	qrepo repository.QuestionRepository
 	arepo repository.AnswerRepository
 	urepo repository.UserRepository
@@ -16,6 +19,7 @@ type Handler struct {
 }
 
 func NewHandler(
+	trapSvc *trap.TrapService,
 	qrepo repository.QuestionRepository,
 	arepo repository.AnswerRepository,
 	urepo repository.UserRepository,
@@ -23,6 +27,8 @@ func NewHandler(
 ) *Handler {
 	gob.Register(&oauth2.Token{})
 	return &Handler{
+		trapSvc: trapSvc,
+
 		qrepo: qrepo,
 		arepo: arepo,
 		urepo: urepo,

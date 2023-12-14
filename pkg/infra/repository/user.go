@@ -51,3 +51,12 @@ func (r *UserRepository) FindUserByID(id string) (*domain.User, error) {
 	}
 	return &result, nil
 }
+
+func (r *UserRepository) Create(user *domain.User) (*domain.User, error) {
+	_, err := r.db.Exec("INSERT INTO users (id, name, display_name, icon_url, user_type) VALUES (?, ?, ?, ?, ?)", user.ID, user.Name, user.DisplayName, user.IconURL.String(), user.UserType)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}

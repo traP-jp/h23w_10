@@ -18,6 +18,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/traP-jp/h23w_10/handler"
 	"github.com/traP-jp/h23w_10/pkg/infra/repository"
+	"github.com/traP-jp/h23w_10/pkg/infra/trap"
+	"github.com/traPtitech/go-traq"
 	traqoauth2 "github.com/traPtitech/go-traq-oauth2"
 	"golang.org/x/oauth2"
 )
@@ -37,6 +39,8 @@ func main() {
 		panic(err)
 	}
 
+	traqClient := traq.NewAPIClient(traq.NewConfiguration())
+
 	oauth2Conf := oauth2.Config{
 		ClientID:     getEnvOrDefault("CLIENT_ID", "client_id"),
 		ClientSecret: getEnvOrDefault("CLIENT_SECRET", "client_secret"),
@@ -46,6 +50,7 @@ func main() {
 	}
 
 	h := handler.NewHandler(
+		trap.NewTrapService(traqClient),
 		repository.NewQuestionRepository(db),
 		repository.NewAnswerRepository(db),
 		repository.NewUserRepository(db),

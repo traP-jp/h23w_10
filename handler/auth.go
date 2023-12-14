@@ -3,10 +3,12 @@ package handler
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"net/http"
 
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
+	"github.com/traP-jp/h23w_10/pkg/domain/repository"
 )
 
 func (h *Handler) GetAuthParams(c echo.Context) error {
@@ -50,7 +52,28 @@ func (h *Handler) Oauth2Callback(c echo.Context) error {
 	}
 	sess.Values["token"] = token
 
+	// get user from traq
+	user, err := h.trapSvc.GetMe(c.Request().Context(), token.AccessToken)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	sess.Values["userID"] = user.ID
+
 	if err := sess.Save(c.Request(), c.Response()); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	// check user exists
+	_, err = h.urepo.FindUserByID(user.ID)
+	if err != nil && !errors.Is(err, repository.ErrNotFound) {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	} else if err == nil {
+		return c.Redirect(http.StatusFound, "/")
+	}
+
+	// create user
+	_, err = h.urepo.Create(user)
+	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
