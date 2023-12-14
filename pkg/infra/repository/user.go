@@ -21,10 +21,11 @@ func NewUserRepository(db *sqlx.DB) *UserRepository {
 }
 
 type User struct {
-	ID       string `db:"id"`
-	Name     string `db:"name"`
-	IconURL  string `db:"icon_url"`
-	UserType string `db:"user_type"`
+	ID          string `db:"id"`
+	Name        string `db:"name"`
+	DisplayName string `db:"display_name"`
+	IconURL     string `db:"icon_url"`
+	UserType    string `db:"user_type"`
 }
 
 func (r *UserRepository) FindUserByID(id string) (*domain.User, error) {
@@ -48,4 +49,13 @@ func (r *UserRepository) FindUserByID(id string) (*domain.User, error) {
 		UserType: domain.UserType(user.UserType),
 	}
 	return &result, nil
+}
+
+func (r *UserRepository) Create(user *domain.User) (*domain.User, error) {
+	_, err := r.db.Exec("INSERT INTO users (id, name, display_name, icon_url, user_type) VALUES (?, ?, ?, ?, ?)", user.ID, user.Name, user.DisplayName, user.IconURL.String(), user.UserType)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
