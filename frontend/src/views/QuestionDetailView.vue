@@ -32,50 +32,38 @@
       <MdPreview :editorId="editorId" :modelValue="question.content" />
       <v-card-actions class="d-flex justify-space-between">
         <div class="d-flex justify-space-between text-end">
-          <p>{{ question.userID }}|</p>
+          <p>{{ question.userId }}|</p>
           <p>{{ question.createdAt.toLocaleDateString() }}</p>
         </div>
         <div>
           <v-btn @click="showModal">編集</v-btn>
-          <v-btn
-            density="compact"
-            icon="mdi-thumb-up"
-            color="green"
-            @click="incrementScore(question)"
-          ></v-btn>
-          <v-chip class="mx-4" color="blue-grey lighten-2" text-color="white">{{
-            question.score
-          }}</v-chip>
-          <v-btn
-            density="compact"
-            icon="mdi-thumb-down"
-            color="red"
-            @click="decrementScore(question)"
-          ></v-btn>
+          <v-btn density="compact" icon="mdi-thumb-up" color="green"></v-btn>
+          <v-chip class="mx-4" color="blue-grey lighten-2" text-color="white">1</v-chip>
+          <v-btn density="compact" icon="mdi-thumb-down" color="red"></v-btn>
         </div>
       </v-card-actions>
     </v-card>
     <v-dialog v-model="isVisible">
-          <v-card>
-            <v-card-title>
-              <span class="headline">回答を編集する</span>
-            </v-card-title>
-            <v-card-text>
-              <MdEditor v-model="question.content" :language="language" />
-            </v-card-text>
-            <v-card-actions>
-              <v-btn color="black" append-icon="mdi-close" @click="hideModal"> 閉じる </v-btn>
-              <v-btn
-                color="green"
-                append-icon="mdi-send"
-                :disabled="!canSubmitNewContent(question.content)"
-                @click="submitEditedData"
-              >
-                編集内容を保存する
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
+      <v-card>
+        <v-card-title>
+          <span class="headline">回答を編集する</span>
+        </v-card-title>
+        <v-card-text>
+          <MdEditor v-model="question.content" :language="language" />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="black" append-icon="mdi-close" @click="hideModal"> 閉じる </v-btn>
+          <v-btn
+            color="green"
+            append-icon="mdi-send"
+            :disabled="!canSubmitNewContent(question.content)"
+            @click="submitEditedData"
+          >
+            編集内容を保存する
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-divider :thickness="2"></v-divider>
     <div class="ma-2 ml-0">
       <h2>{{ answers.length }}件の回答</h2>
@@ -91,21 +79,9 @@
             </div>
             <div>
               <v-btn @click="showModal">編集</v-btn>
-              <v-btn
-                density="compact"
-                icon="mdi-thumb-up"
-                color="green"
-                @click="incrementScore(answer)"
-              ></v-btn>
-              <v-chip class="mx-4" color="blue-grey lighten-2" text-color="white">{{
-                answer.score
-              }}</v-chip>
-              <v-btn
-                density="compact"
-                icon="mdi-thumb-down"
-                color="red"
-                @click="decrementScore(answer)"
-              ></v-btn>
+              <v-btn density="compact" icon="mdi-thumb-up" color="green"></v-btn>
+              <v-chip class="mx-4" color="blue-grey lighten-2" text-color="white">1</v-chip>
+              <v-btn density="compact" icon="mdi-thumb-down" color="red"></v-btn>
             </div>
           </v-card-actions>
         </v-card>
@@ -153,100 +129,102 @@
                 >回答を送信</v-btn
               ></span
             > </template
-          ><span>回答が入力されていないません</span>
+          ><span>回答が入力されていません</span>
         </v-tooltip>
       </div>
     </div>
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
 import { MdEditor, MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
-export default {
-  components: {
-    MdEditor,
-    MdPreview
+import { ref, reactive, computed, onMounted } from 'vue'
+import { getQuestion, type Question, type QuestionStatus } from '@/lib/api/questions'
+import { useRoute } from 'vue-router'
+
+const editorId = 'preview-only'
+const newAnswerContent = ref('')
+const language = 'en-US'
+const isVisible = ref(false)
+const user = reactive({
+  id: '1',
+  name: 'masky',
+  iconURL: 'https://q.trap.jp/api/v3/public/icon/username',
+  userType: 'trap'
+})
+const tags = reactive([
+  { id: '1', name: 'Tag1' },
+  { id: '2', name: 'Tag2' },
+  { id: '3', name: 'Tag3' }
+])
+const answers = reactive([
+  {
+    id: '1',
+    userID: '1',
+    questionID: '1',
+    content: '## 回答内容1',
+    createdAt: new Date(),
+    score: 0
   },
-  data() {
-    return {
-      editorId: 'preview-only',
-      newAnswerContent: '',
-      language: 'en-US',
-      isVisible: false,
-      user: {
-        id: '1',
-        name: 'masky',
-        iconURL: 'https://q.trap.jp/api/v3/public/icon/username',
-        userType: 'trap'
-      },
-      tags: [
-        { id: '1', name: 'Tag1' },
-        { id: '2', name: 'Tag2' },
-        { id: '3', name: 'Tag3' }
-      ],
-      answers: [
-        {
-          id: '1',
-          userID: '1',
-          questionID: '1',
-          content: '## 回答内容1',
-          createdAt: new Date(),
-          score: 0
-        },
-        {
-          id: '2',
-          userID: '1',
-          questionID: '1',
-          content: '## 回答内容2',
-          createdAt: new Date(),
-          score: 2
-        }
-      ],
-      question: {
-        id: '1',
-        userID: '1',
-        title: '質問タイトル',
-        content: '## 質問内容がここに入力される',
-        createdAt: new Date(),
-        tags: [],
-        answers: [],
-        status: 'open',
-        score: 0
-      }
-    }
-  },
-  methods: {
-    submitNewAnswer() {
-      alert('回答を送信しました')
-      this.newAnswerContent = ''
-    },
-    incrementScore(item) {
-      item.score++
-    },
-    decrementScore(item) {
-      item.score--
-    },
-    showModal() {
-      this.isVisible = true
-    },
-    hideModal() {
-      this.isVisible = false
-    },
-    submitEditedData() {
-      alert('編集内容を保存しました')
-      this.hideModal()
-    },
-    canSubmitNewContent(content) {
-      return content.length > 0 // 本当は読み込んだ時点のデータとの差があったらtrueにしたい。一旦これで，別ブランチで実装する
-    }
-  },
-  computed: {
-    isOpen() {
-      return this.question.status === 'open'
-    }
+  {
+    id: '2',
+    userID: '1',
+    questionID: '1',
+    content: '## 回答内容2',
+    createdAt: new Date(),
+    score: 2
   }
+])
+
+const question = ref<Question>({
+  id: '',
+  userId: '',
+  title: '',
+  content: '',
+  createdAt: new Date(),
+  tags: [],
+  answers: [],
+  status: 'open'
+})
+
+const submitNewAnswer = () => {
+  alert('回答を送信しました')
+  newAnswerContent.value = ''
 }
+
+const showModal = () => {
+  isVisible.value = true
+}
+
+const hideModal = () => {
+  isVisible.value = false
+}
+
+const submitEditedData = () => {
+  alert('編集内容を保存しました')
+  hideModal()
+}
+
+const canSubmitNewContent = (content: string) => {
+  return content.length > 0
+}
+
+const isOpen = computed(() => question.value.status === 'open')
+
+onMounted(() => {
+  const route = useRoute()
+  const id: string = route.params.id as string
+  console.log(id)
+
+  getQuestion({ id })
+    .then((response) => {
+      question.value = response
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+})
 </script>
 <style scoped>
 .container {
