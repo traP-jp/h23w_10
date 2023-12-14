@@ -18,6 +18,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/traP-jp/h23w_10/handler"
 	"github.com/traP-jp/h23w_10/pkg/infra/repository"
+	traqoauth2 "github.com/traPtitech/go-traq-oauth2"
+	"golang.org/x/oauth2"
 )
 
 func main() {
@@ -35,14 +37,26 @@ func main() {
 		panic(err)
 	}
 
-	sessionSecret, err := hex.DecodeString(getEnvOrDefault("SESSION_SECRET", "12345678"))
+	oauth2Conf := oauth2.Config{
+		ClientID:     getEnvOrDefault("CLIENT_ID", "client_id"),
+		ClientSecret: getEnvOrDefault("CLIENT_SECRET", "client_secret"),
+		Endpoint:     traqoauth2.Prod,
+		RedirectURL:  getEnvOrDefault("REDIRECT_URL", "http://localhost:8080/oauth2/callback"),
+		Scopes:       []string{"read"},
+	}
 
-	h := handler.NewHandler(repository.NewQuestionRepository(db), repository.NewAnswerRepository(db), repository.NewUserRepository(db))
+	h := handler.NewHandler(
+		repository.NewQuestionRepository(db),
+		repository.NewAnswerRepository(db),
+		repository.NewUserRepository(db),
+		oauth2Conf,
+	)
 
 	e := echo.New()
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
+	sessionSecret, err := hex.DecodeString(getEnvOrDefault("SESSION_SECRET", "12345678"))
 	e.Use(session.Middleware(sessions.NewCookieStore(sessionSecret)))
 
 	e.GET("/health", func(c echo.Context) error {
@@ -57,6 +71,9 @@ func main() {
 	e.GET("/tags", h.GetTags)
 	e.POST("/tags", h.PostTag)
 	e.GET("/users/:id", h.GetUserByID)
+
+	e.GET("/oauth2/params", h.GetAuthParams)
+	e.GET("/oauth2/callback", h.Oauth2Callback)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
