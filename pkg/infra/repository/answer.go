@@ -53,6 +53,14 @@ func (r *AnswerRepository) Create(answer *domain.Answer) (*domain.Answer, error)
 	return answer, nil
 }
 
+func (r *AnswerRepository) Update(answer *domain.Answer) (*domain.Answer, error) {
+	_, err := r.db.Exec("UPDATE answers SET content = ? WHERE id = ?", answer.Content, answer.ID)
+	if err != nil {
+		return nil, err
+	}
+	return answer, nil
+}
+
 func fromAnswerModel(answer Answer) domain.Answer {
 	return domain.Answer{
 		ID:         answer.ID,

@@ -30,6 +30,11 @@ type PostAnswerResponse struct {
 	CreatedAt  string `json:"created_at,omitempty"`
 }
 
+type PutAnswerRequest struct {
+	ID      string `json:"id,omitempty"`
+	Content string `json:"content,omitempty"`
+}
+
 func (h *Handler) GetAnswersByQuestionID(c echo.Context) error {
 	questionID := c.Param("id")
 	answers, err := h.arepo.FindByQuestionID(questionID)
@@ -76,4 +81,22 @@ func (h *Handler) PostAnswer(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, response)
+}
+
+func (h *Handler) PutAnswer(c echo.Context) error {
+	var request PutAnswerRequest
+	if err := c.Bind(&request); err != nil {
+		return err
+	}
+
+	answer := &domain.Answer{
+		ID:      request.ID,
+		Content: request.Content,
+	}
+	_, err := h.arepo.Update(answer)
+	if err != nil {
+		return err
+	}
+
+	return c.NoContent(http.StatusNoContent)
 }
