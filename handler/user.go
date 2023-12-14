@@ -33,7 +33,7 @@ func (h *Handler) GetUserMe(c echo.Context) error {
 	}
 	userID, ok := sess.Values["userID"].(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
+		return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
 	}
 
 	user, err := h.urepo.FindUserByID(userID)
