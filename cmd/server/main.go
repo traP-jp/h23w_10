@@ -72,6 +72,9 @@ func main() {
 	e.POST("/tags", h.PostTag)
 	e.GET("/users/:id", h.GetUserByID)
 
+	e.GET("/oauth2/params", h.GetAuthParams)
+	e.GET("/oauth2/callback", h.Oauth2Callback)
+
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
