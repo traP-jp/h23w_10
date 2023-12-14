@@ -61,24 +61,26 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
-	sessionSecret, err := hex.DecodeString(getEnvOrDefault("SESSION_SECRET", "12345678"))
+	sessionSecret, _ := hex.DecodeString(getEnvOrDefault("SESSION_SECRET", "12345678"))
 	e.Use(session.Middleware(sessions.NewCookieStore(sessionSecret)))
 
-	e.GET("/health", func(c echo.Context) error {
+	api := e.Group("/api")
+
+	api.GET("/health", func(c echo.Context) error {
 		return c.String(200, "OK")
 	})
 
-	e.GET("/questions", h.GetQuestions)
-	e.POST("/questions", h.PostQuestion)
-	e.GET("/questions/:id", h.GetQuestionByID)
-	e.PUT("/questions/:id", h.PutQuestion)
-	e.POST("/questions/:id/answers", h.PostAnswer)
-	e.GET("/tags", h.GetTags)
-	e.POST("/tags", h.PostTag)
-	e.GET("/users/:id", h.GetUserByID)
+	api.GET("/questions", h.GetQuestions)
+	api.POST("/questions", h.PostQuestion)
+	api.GET("/questions/:id", h.GetQuestionByID)
+	api.PUT("/questions/:id", h.PutQuestion)
+	api.POST("/questions/:id/answers", h.PostAnswer)
+	api.GET("/tags", h.GetTags)
+	api.POST("/tags", h.PostTag)
+	api.GET("/users/:id", h.GetUserByID)
 
-	e.GET("/oauth2/params", h.GetAuthParams)
-	e.GET("/oauth2/callback", h.Oauth2Callback)
+	api.GET("/oauth2/params", h.GetAuthParams)
+	api.GET("/oauth2/callback", h.Oauth2Callback)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
