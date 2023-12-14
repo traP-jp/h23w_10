@@ -75,6 +75,7 @@ func main() {
 	api.GET("/questions/:id", h.GetQuestionByID)
 	api.PUT("/questions/:id", h.PutQuestion)
 	api.POST("/questions/:id/answers", h.PostAnswer)
+	api.PUT("/questions/:questionId/answers/:answerId", h.PutAnswer)
 	api.GET("/tags", h.GetTags)
 	api.POST("/tags", h.PostTag)
 	api.GET("/users/:id", h.GetUserByID)
