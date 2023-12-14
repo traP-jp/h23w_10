@@ -42,6 +42,7 @@ func main() {
 	e := echo.New()
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
+	e.Use(middleware.CORS())
 	e.Use(session.Middleware(sessions.NewCookieStore(sessionSecret)))
 
 	e.GET("/health", func(c echo.Context) error {
