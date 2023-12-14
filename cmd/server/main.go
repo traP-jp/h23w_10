@@ -78,6 +78,7 @@ func main() {
 	api.GET("/tags", h.GetTags)
 	api.POST("/tags", h.PostTag)
 	api.GET("/users/:id", h.GetUserByID)
+	api.GET("/users/me", h.GetUserMe)
 
 	api.GET("/oauth2/params", h.GetAuthParams)
 	api.GET("/oauth2/callback", h.Oauth2Callback)
