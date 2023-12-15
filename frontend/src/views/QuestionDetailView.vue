@@ -5,110 +5,58 @@
     </div>
     <div class="post-metadata">
       <div class="text-start">
-        <v-chip v-if="isOpen" color="green">回答受付中</v-chip>
-        <v-chip v-else color="red">回答締め切り</v-chip>
+        <question-status :status="question.status" />
         <v-chip variant="text" color="grey">{{ answers.length }}件の回答</v-chip>
       </div>
       <div class="text-end">
-        <v-chip variant="text" color="grey">{{ user.name }}</v-chip
+        <v-chip variant="text" color="grey">{{ user?.name }}</v-chip>
         ><v-chip variant="text" color="grey"
-          >投稿日:{{ question.createdAt.toLocaleDateString() }}</v-chip
+          >投稿日:{{ question.createdAt ? question.createdAt.toLocaleDateString() : '' }}</v-chip
         >
       </div>
     </div>
     <div class="post-metadata">
       <div class="text-start">
         <div class="tag-container">
-          <div v-for="tag in tags" :key="tag.id">
-            <div class="tag">
-              <v-chip>{{ tag.name }}</v-chip>
-            </div>
-          </div>
+          <question-tag v-for="tag in question.tags" :key="tag.id" :tag="tag" />
         </div>
       </div>
     </div>
     <v-divider :thickness="1"></v-divider>
-    <v-card class="full-screen-card">
-      <MdPreview :editorId="editorId" :modelValue="question.content" />
-      <v-card-actions class="d-flex justify-space-between">
-        <div class="d-flex justify-space-between text-end">
-          <p>{{ question.userId }}|</p>
-          <p>{{ question.createdAt.toLocaleDateString() }}</p>
-        </div>
-        <div>
-          <v-btn @click="showModal">編集</v-btn>
-          <v-btn density="compact" icon="mdi-thumb-up" color="green"></v-btn>
-          <v-chip class="mx-4" color="blue-grey lighten-2" text-color="white">1</v-chip>
-          <v-btn density="compact" icon="mdi-thumb-down" color="red"></v-btn>
-        </div>
-      </v-card-actions>
-    </v-card>
-    <v-dialog v-model="isVisible">
-      <v-card>
-        <v-card-title>
-          <span class="headline">回答を編集する</span>
-        </v-card-title>
-        <v-card-text>
-          <MdEditor v-model="question.content" :language="language" />
-        </v-card-text>
-        <v-card-actions>
-          <v-btn color="black" append-icon="mdi-close" @click="hideModal"> 閉じる </v-btn>
-          <v-btn
-            color="green"
-            append-icon="mdi-send"
-            :disabled="!canSubmitNewContent(question.content)"
-            @click="submitEditedData"
-          >
-            編集内容を保存する
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <DetailCard
+      :editorId="editorId"
+      :content="question.content"
+      :userId="question.userId"
+      :createdAt="question.createdAt"
+      :showModal="showModal"
+      :isQuestion="true"
+      :isQuestionResolved="isQuestionResolved"
+      @update:isQuestionResolved="isQuestionResolved = $event"
+    />
     <v-divider :thickness="2"></v-divider>
     <div class="ma-2 ml-0">
       <h2>{{ answers.length }}件の回答</h2>
     </div>
     <div class="answers">
-      <v-row no-gutters v-for="answer in answers" :key="answer.id">
-        <v-card class="full-screen-card my-4">
-          <MdPreview :editorId="editorId" :modelValue="answer.content" />
-          <v-card-actions class="d-flex justify-space-between">
-            <div class="d-flex justify-space-between text-end">
-              <p>{{ answer.userID }}|</p>
-              <p>{{ answer.createdAt.toLocaleDateString() }}</p>
-            </div>
-            <div>
-              <v-btn @click="showModal">編集</v-btn>
-              <v-btn density="compact" icon="mdi-thumb-up" color="green"></v-btn>
-              <v-chip class="mx-4" color="blue-grey lighten-2" text-color="white">1</v-chip>
-              <v-btn density="compact" icon="mdi-thumb-down" color="red"></v-btn>
-            </div>
-          </v-card-actions>
-        </v-card>
-        <v-dialog v-model="isVisible">
-          <v-card>
-            <v-card-title>
-              <span class="headline">回答を編集する</span>
-            </v-card-title>
-            <v-card-text>
-              <MdEditor v-model="answer.content" :language="language" />
-            </v-card-text>
-            <v-card-actions>
-              <v-btn color="black" append-icon="mdi-close" @click="hideModal"> 閉じる </v-btn>
-              <v-btn
-                color="green"
-                append-icon="mdi-send"
-                :disabled="!canSubmitNewContent(answer.content)"
-                @click="submitEditedData"
-              >
-                編集内容を保存する
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-        <v-divider :thickness="1"></v-divider>
-      </v-row>
+      <DetailCard
+        v-for="answer in answers"
+        :key="answer.id"
+        :editorId="editorId"
+        :content="answer.content"
+        :userId="answer.userId"
+        :createdAt="answer.createdAt"
+        :showModal="showModal"
+        :isQuestion="false"
+        :isQuestionResolved="isQuestionResolved"
+        @update:isQuestionResolved="isQuestionResolved = $event"
+      />
     </div>
+    <div class="d-flex justify-center my-4" v-if="question.status === 'open'">
+      <v-btn color="green" rounded="xl" @click="changeQuestionStatus"
+        >この質問を解決済みにする</v-btn
+      >
+    </div>
+    <!-- Todo: 質問者しか見えない状態にする -->
     <v-divider :thickness="2"></v-divider>
     <div class="ma-2 ml-0">
       <h2>回答を投稿する</h2>
@@ -133,50 +81,57 @@
         </v-tooltip>
       </div>
     </div>
+    <v-dialog v-model="isVisible">
+      <v-card>
+        <v-card-title>
+          <span class="headline">回答を編集する</span>
+        </v-card-title>
+        <v-card-text>
+          <MdEditor v-model="modalContent" :language="language" />
+        </v-card-text>
+        <div class="my-3" style="display: flex; justify-content: flex-end">
+          <v-btn color="black" rounded="xl" append-icon="mdi-close" class="mr-1" @click="hideModal">
+            閉じる
+          </v-btn>
+          <v-btn
+            color="green"
+            rounded="xl"
+            append-icon="mdi-send"
+            :disabled="!canSubmitNewContent(modalContent)"
+            @click="submitEditedData"
+            class="ml-3 mr-6"
+          >
+            編集内容を保存する
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { MdEditor, MdPreview } from 'md-editor-v3'
+import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
-import { ref, reactive, computed, onMounted } from 'vue'
-import { getQuestion, type Question, type QuestionStatus } from '@/lib/api/questions'
+import { ref, onMounted } from 'vue'
+import { getQuestion, type Question } from '@/lib/api/questions'
+import { type Answer } from '@/lib/api/answers'
+import { type Tag } from '@/lib/api/tags'
+import { getUser, type User } from '@/lib/api/users'
+import QuestionStatus from '@/components/QuestionStatus.vue'
+import QuestionTag from '@/components/QuestionTag.vue'
+import DetailCard from '@/components/DetailCard.vue'
 import { useRoute } from 'vue-router'
 
 const editorId = 'preview-only'
+const modalContent = ref('')
 const newAnswerContent = ref('')
 const language = 'en-US'
 const isVisible = ref(false)
-const user = reactive({
-  id: '1',
-  name: 'masky',
-  iconURL: 'https://q.trap.jp/api/v3/public/icon/username',
-  userType: 'trap'
-})
-const tags = reactive([
-  { id: '1', name: 'Tag1' },
-  { id: '2', name: 'Tag2' },
-  { id: '3', name: 'Tag3' }
-])
-const answers = reactive([
-  {
-    id: '1',
-    userID: '1',
-    questionID: '1',
-    content: '## 回答内容1',
-    createdAt: new Date(),
-    score: 0
-  },
-  {
-    id: '2',
-    userID: '1',
-    questionID: '1',
-    content: '## 回答内容2',
-    createdAt: new Date(),
-    score: 2
-  }
-])
-
+const isQuestion = ref(true)
+const user = ref<User>()
+const tags = ref<Tag[]>([])
+const isQuestionResolved = ref(false)
+const answers = ref<Answer[]>([])
 const question = ref<Question>({
   id: '',
   userId: '',
@@ -193,7 +148,9 @@ const submitNewAnswer = () => {
   newAnswerContent.value = ''
 }
 
-const showModal = () => {
+const showModal = (content: string, isQuestionValue: boolean) => {
+  modalContent.value = content
+  isQuestion.value = isQuestionValue
   isVisible.value = true
 }
 
@@ -202,7 +159,13 @@ const hideModal = () => {
 }
 
 const submitEditedData = () => {
-  alert('編集内容を保存しました')
+  if (isQuestion.value) {
+    // Todo: APIに置き換える
+    console.log('質問が編集されました')
+  } else {
+    // Todo: APIに置き換える
+    console.log('回答が編集されました')
+  }
   hideModal()
 }
 
@@ -210,16 +173,28 @@ const canSubmitNewContent = (content: string) => {
   return content.length > 0
 }
 
-const isOpen = computed(() => question.value.status === 'open')
+const changeQuestionStatus = () => {
+  question.value.status = 'closed'
+}
 
 onMounted(() => {
   const route = useRoute()
   const id: string = route.params.id as string
-  console.log(id)
-
   getQuestion({ id })
     .then((response) => {
       question.value = response
+      answers.value = question.value.answers
+      tags.value = question.value.tags
+      if (question.value.status === 'closed') {
+        isQuestionResolved.value = true
+      }
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+  getUser({ id: question.value.userId })
+    .then((response) => {
+      user.value = response
     })
     .catch((error) => {
       console.error(error)
@@ -248,5 +223,9 @@ onMounted(() => {
 .full-screen-card {
   width: 100%;
   margin: 20px auto;
+}
+.flex-space-between {
+  display: flex;
+  justify-content: space-between;
 }
 </style>
