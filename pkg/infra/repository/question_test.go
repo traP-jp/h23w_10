@@ -19,6 +19,7 @@ func TestQuestionRepository(t *testing.T) {
 
 	var (
 		questionID = domain.NewUUID()
+		userID     = domain.NewUUID()
 		tagID      = domain.NewUUID()
 	)
 
@@ -38,7 +39,7 @@ func TestQuestionRepository(t *testing.T) {
 	t.Run("Create Question", func(t *testing.T) {
 		question := &domain.Question{
 			ID:        questionID,
-			UserID:    domain.NewUUID(),
+			UserID:    userID,
 			Title:     "test title",
 			Content:   "test content",
 			CreatedAt: time.Now(),
@@ -117,6 +118,24 @@ func TestQuestionRepository(t *testing.T) {
 		}
 		if count != 0 {
 			t.Errorf("count = %d, want %d", count, 0)
+		}
+	})
+
+	// Find Question By User ID
+	t.Run("Find Question By User ID", func(t *testing.T) {
+		questions, count, err := repo.FindByUserID(userID, &repository.FindQuestionsCondition{
+			Limit:    10,
+			Offset:   0,
+			Statuses: []domain.QuestionStatus{domain.QuestionStatusOpen, domain.QuestionStatusClosed},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(questions) != 1 {
+			t.Errorf("len(questions) = %d, want %d", len(questions), 1)
+		}
+		if count != 1 {
+			t.Errorf("count = %d, want %d", count, 1)
 		}
 	})
 
