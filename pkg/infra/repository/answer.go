@@ -28,6 +28,23 @@ type Answer struct {
 	CreatedAt  time.Time `db:"created_at"`
 }
 
+func (r *AnswerRepository) FindByID(id string) (*domain.Answer, error) {
+	var answer Answer
+	err := r.db.Get(&answer, "SELECT * FROM answers WHERE id = ?", id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, repository.ErrNotFound
+	} else if err != nil {
+		return nil, err
+	}
+	return &domain.Answer{
+		ID:         answer.ID,
+		QuestionID: answer.QuestionID,
+		UserID:     answer.UserID,
+		Content:    answer.Content,
+		CreatedAt:  answer.CreatedAt,
+	}, nil
+}
+
 func (r *AnswerRepository) FindByQuestionID(questionID string) ([]domain.Answer, error) {
 	var answers []Answer
 	err := r.db.Select(&answers, "SELECT * FROM answers WHERE question_id = ? ORDER BY created_at ASC", questionID)
