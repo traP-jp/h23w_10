@@ -13,20 +13,38 @@ import (
 	"github.com/traP-jp/h23w_10/pkg/domain/repository"
 )
 
+type User struct {
+	ID          string `json:"id,omitempty"`
+	Name        string `json:"name,omitempty"`
+	DisplayName string `json:"display_name,omitempty"`
+	IconURL     string `json:"icon_url,omitempty"`
+	UserType    string `json:"user_type,omitempty"`
+}
+
 type QuestionWithUser struct {
 	ID        string                `json:"id,omitempty"`
-	User      domain.User           `json:"user,omitempty"`
+	User      User                  `json:"user,omitempty"`
 	Title     string                `json:"title,omitempty"`
 	Content   string                `json:"content,omitempty"`
 	CreatedAt time.Time             `json:"created_at,omitempty"`
 	Tags      []domain.Tag          `json:"tags,omitempty"`
-	Answers   []domain.Answer       `json:"answers,omitempty"`
 	Status    domain.QuestionStatus `json:"status,omitempty"`
 }
 
 type GetQuestionsResponse struct {
 	Total     int                `json:"total,omitempty"`
 	Questions []QuestionWithUser `json:"questions,omitempty"`
+}
+
+type GetQuestionByIDResponse struct {
+	ID        string                `json:"id,omitempty"`
+	User      User                  `json:"user,omitempty"`
+	Title     string                `json:"title,omitempty"`
+	Content   string                `json:"content,omitempty"`
+	CreatedAt time.Time             `json:"created_at,omitempty"`
+	Tags      []domain.Tag          `json:"tags,omitempty"`
+	Answers   []domain.Answer       `json:"answers,omitempty"`
+	Status    domain.QuestionStatus `json:"status,omitempty"`
 }
 
 type GetTagsResponse struct {
@@ -114,13 +132,18 @@ func (h *Handler) GetQuestions(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
 		result[i] = QuestionWithUser{
-			ID:        q.ID,
-			User:      *user,
+			ID: q.ID,
+			User: User{
+				ID:          user.ID,
+				Name:        user.Name,
+				DisplayName: user.DisplayName,
+				IconURL:     user.IconURL.String(),
+				UserType:    string(user.UserType),
+			},
 			Title:     q.Title,
 			Content:   q.Content,
 			CreatedAt: q.CreatedAt,
 			Tags:      q.Tags,
-			Answers:   q.Answers,
 			Status:    q.Status,
 		}
 	}
@@ -134,7 +157,14 @@ func (h *Handler) GetQuestions(c echo.Context) error {
 
 func (h *Handler) GetQuestionByID(c echo.Context) error {
 	id := c.Param("id")
-	response, err := h.qrepo.FindByID(id)
+	question, err := h.qrepo.FindByID(id)
+	if errors.Is(err, repository.ErrNotFound) {
+		return echo.NewHTTPError(http.StatusNotFound, err.Error())
+	} else if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	user, err := h.urepo.FindUserByID(question.UserID)
 	if errors.Is(err, repository.ErrNotFound) {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	} else if err != nil {
@@ -145,7 +175,25 @@ func (h *Handler) GetQuestionByID(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	response.Answers = answers
+	question.Answers = answers
+
+	response := GetQuestionByIDResponse{
+		ID: question.ID,
+		User: User{
+			ID:          user.ID,
+			Name:        user.Name,
+			DisplayName: user.DisplayName,
+			IconURL:     user.IconURL.String(),
+			UserType:    string(user.UserType),
+		},
+		Title:     question.Title,
+		Content:   question.Content,
+		CreatedAt: question.CreatedAt,
+		Tags:      question.Tags,
+		Answers:   question.Answers,
+		Status:    question.Status,
+	}
+
 	return c.JSON(http.StatusOK, response)
 }
 
