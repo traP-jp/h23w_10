@@ -153,14 +153,23 @@ func (h *Handler) PutQuestion(c echo.Context) error {
 		return err
 	}
 
-	question := &domain.Question{
+	question, err := h.qrepo.FindByID(req.ID)
+	if errors.Is(err, repository.ErrNotFound) {
+		return echo.NewHTTPError(http.StatusNotFound, err.Error())
+	}
+
+	if uid := c.Get("userID"); uid != question.UserID {
+		return echo.NewHTTPError(http.StatusForbidden, "not allowed to update")
+	}
+
+	question = &domain.Question{
 		ID:      req.ID,
 		Title:   req.Title,
 		Content: req.Content,
 		Tags:    req.Tags,
 		Status:  domain.QuestionStatus(req.Status),
 	}
-	_, err := h.qrepo.Update(question)
+	_, err = h.qrepo.Update(question)
 	if errors.Is(err, repository.ErrTagNotFound) {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	} else if err != nil {
@@ -190,6 +199,10 @@ func (h *Handler) PostQuestion(c echo.Context) error {
 	var request PostQuestionRequest
 	if err := c.Bind(&request); err != nil {
 		return err
+	}
+
+	if uid := c.Get("userID"); uid != request.UserID {
+		return echo.NewHTTPError(http.StatusForbidden, "not allowed to create")
 	}
 
 	question := &domain.Question{
