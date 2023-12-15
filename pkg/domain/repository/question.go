@@ -7,6 +7,7 @@ type QuestionRepository interface {
 	// answerは含めないで返す
 	FindByID(id string) (*domain.Question, error)
 	FindByTagID(tagID string, condition *FindQuestionsCondition) ([]domain.Question, int, error)
+	FindByUserID(userID string, condition *FindQuestionsCondition) ([]domain.Question, int, error)
 	Create(question *domain.Question) (*domain.Question, error)
 	Update(question *domain.Question) (*domain.Question, error)
 	FindTags() ([]domain.Tag, error)

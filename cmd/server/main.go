@@ -89,7 +89,7 @@ func main() {
 
 func ConnectDB() *sqlx.DB {
 	// wait for mysql
-	time.Sleep(10 * time.Second)
+	time.Sleep(20 * time.Second)
 	jst, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
 		panic(err)

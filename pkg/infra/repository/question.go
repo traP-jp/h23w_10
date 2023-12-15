@@ -149,6 +149,39 @@ func (r *QuestionRepository) FindByID(id string) (*domain.Question, error) {
 	return result, nil
 }
 
+func (r *QuestionRepository) FindByUserID(userID string, condition *repository.FindQuestionsCondition) ([]domain.Question, int, error) {
+	statuses, err := r.getStatusIDs(condition.Statuses)
+	if err != nil {
+		return nil, 0, err
+	}
+	var count int
+	query, params, err := sqlx.In("SELECT COUNT(*) FROM questions WHERE user_id = ? AND status_id IN (?)", userID, statuses)
+	if err != nil {
+		return nil, 0, err
+	}
+	if err := r.db.Get(&count, query, params...); err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, 0, err
+	}
+	// get questions
+	query, params, err = sqlx.In("SELECT * FROM questions WHERE user_id = ? AND status_id IN (?) ORDER BY created_at DESC LIMIT ? OFFSET ?",
+		userID,
+		statuses,
+		condition.Limit,
+		condition.Offset,
+	)
+	rows, err := r.db.Queryx(query, params...)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+	result, err := r.fillTags(rows)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return result, count, nil
+}
+
 func (r *QuestionRepository) Create(question *domain.Question) (*domain.Question, error) {
 	tx, err := r.db.Beginx()
 	if err != nil {
