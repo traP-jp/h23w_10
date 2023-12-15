@@ -15,7 +15,6 @@
           label="質問のタグを選択"
           :items="tags"
           item-title="name"
-          item-value="id"
           class="mx-3 mt-6"
           v-model="form.tags"
           clearable
@@ -62,12 +61,7 @@
             ></v-text-field>
             <div class="mb-3 mr-3" style="display: flex; justify-content: flex-end">
               <div class="mr-1">
-                <v-btn
-                  color="black"
-                  rounded="xl"
-                  append-icon="mdi-close"
-                  @click="hideModal"
-                >
+                <v-btn color="black" rounded="xl" append-icon="mdi-close" @click="hideModal">
                   閉じる
                 </v-btn>
               </div>
@@ -108,7 +102,7 @@ const language = 'en-US'
 const form = reactive<{ title: string; content: string; tags: Tag[] }>({
   title: '',
   content: '# 質問内容を入力',
-  tags: []
+  tags: [] as Tag[]
 })
 const tags = await getTags()
 const router = useRouter()
@@ -151,7 +145,6 @@ const postNewTag = async () => {
     const res = await postTag({
       name: tagName.value
     })
-    tags.push(res)
     form.tags.push(res)
     tagName.value = ''
     isVisible.value = false
