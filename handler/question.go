@@ -123,15 +123,15 @@ func (h *Handler) GetQuestions(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	result := make([]QuestionWithUser, len(questions))
-	for i, q := range questions {
+	result := make([]QuestionWithUser, 0, len(questions))
+	for _, q := range questions {
 		user, err := h.urepo.FindUserByID(q.UserID)
 		if errors.Is(err, repository.ErrNotFound) {
 			continue
 		} else if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
-		result[i] = QuestionWithUser{
+		result = append(result, QuestionWithUser{
 			ID: q.ID,
 			User: User{
 				ID:          user.ID,
@@ -145,7 +145,7 @@ func (h *Handler) GetQuestions(c echo.Context) error {
 			CreatedAt: q.CreatedAt,
 			Tags:      q.Tags,
 			Status:    q.Status,
-		}
+		})
 	}
 
 	response := GetQuestionsResponse{
