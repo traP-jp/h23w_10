@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/traP-jp/h23w_10/pkg/domain"
+	"github.com/traP-jp/h23w_10/pkg/domain/repository"
 )
 
 type GetAnswersByQuestionIDResponse struct {
@@ -60,6 +62,10 @@ func (h *Handler) PostAnswer(c echo.Context) error {
 		return err
 	}
 
+	if uid := c.Get("userID"); uid != request.UserID {
+		return echo.NewHTTPError(http.StatusForbidden, "not allowed to create")
+	}
+
 	answer := &domain.Answer{
 		ID:         domain.NewUUID(),
 		UserID:     request.UserID,
@@ -89,11 +95,21 @@ func (h *Handler) PutAnswer(c echo.Context) error {
 		return err
 	}
 
+	ans, err := h.arepo.FindByID(request.ID)
+	if errors.Is(err, repository.ErrNotFound) {
+		return echo.NewHTTPError(http.StatusNotFound, "answer not found")
+	} else if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	if uid := c.Get("userID"); uid != ans.UserID {
+		return echo.NewHTTPError(http.StatusForbidden, "not allowed to update")
+	}
+
 	answer := &domain.Answer{
 		ID:      request.ID,
 		Content: request.Content,
 	}
-	_, err := h.arepo.Update(answer)
+	_, err = h.arepo.Update(answer)
 	if err != nil {
 		return err
 	}

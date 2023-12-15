@@ -63,6 +63,7 @@ func main() {
 	e.Use(middleware.CORS())
 	sessionSecret, _ := hex.DecodeString(getEnvOrDefault("SESSION_SECRET", "12345678"))
 	e.Use(session.Middleware(sessions.NewCookieStore(sessionSecret)))
+	e.Use(handler.UserAuthMiddleware)
 
 	api := e.Group("/api")
 
