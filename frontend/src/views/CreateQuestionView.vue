@@ -20,12 +20,16 @@
           clearable
           multiple
           chips
+          closable-chips
           no-data-text="タグが見つかりません"
           @create-new-item="createNewTag"
         >
           <template v-slot:append-item>
             <v-list-item @click="createNewTag">
-              <v-list-item-title> 新しいタグを作成 </v-list-item-title>
+              <div class="d-flex">
+                <div class="mx-2"><v-icon color="green">mdi-plus-circle-outline</v-icon></div>
+                <v-list-item-title class="green--text">新しいタグを追加</v-list-item-title>
+              </div>
             </v-list-item>
           </template>
         </v-autocomplete>
