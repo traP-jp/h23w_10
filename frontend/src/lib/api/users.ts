@@ -1,4 +1,4 @@
-import { BASE } from '.'
+import { BASE, useMock } from '.'
 
 export type UserType = 'trap' | 'external'
 
@@ -15,7 +15,7 @@ export type GetUserRequest = {
 export type GetUserResponse = User
 
 export const getUser = async (req: GetUserRequest): Promise<GetUserResponse> => {
-  if (import.meta.env.DEV) {
+  if (useMock) {
     const { getUserMock } = await import('./mock')
     return getUserMock(req)
   }

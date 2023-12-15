@@ -1,4 +1,4 @@
-import { BASE } from '.'
+import { BASE, useMock } from '.'
 import type { Answer } from './answers'
 import type { Tag } from './tags'
 import type { User } from './users'
@@ -28,7 +28,7 @@ export type GetQuestionsResponse = {
 }
 
 export const getQuestions = async (req: GetQuestionsRequest): Promise<GetQuestionsResponse> => {
-  if (import.meta.env.DEV) {
+  if (useMock) {
     const { getQuestionsMock } = await import('./mock')
     return getQuestionsMock(req)
   }
@@ -57,7 +57,7 @@ export type GetQuestionRequest = {
 export type GetQuestionResponse = Question
 
 export const getQuestion = async (req: GetQuestionRequest): Promise<GetQuestionResponse> => {
-  if (import.meta.env.DEV) {
+  if (useMock) {
     const { getQuestionMock } = await import('./mock')
     return getQuestionMock(req)
   }
@@ -80,7 +80,7 @@ export type PostQuestionRequest = {
 export type PostQuestionResponse = Question
 
 export const postQuestion = async (req: PostQuestionRequest): Promise<PostQuestionResponse> => {
-  if (import.meta.env.DEV) {
+  if (useMock) {
     const { postQuestionMock } = await import('./mock')
     return postQuestionMock(req)
   }
