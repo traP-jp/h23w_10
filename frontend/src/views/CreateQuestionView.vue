@@ -146,11 +146,10 @@ const postNewTag = async () => {
       name: tagName.value
     })
     form.tags.push(res)
-    tagName.value = ''
-    isVisible.value = false
   } catch (err) {
     console.log(err)
   }
+  hideModal()
 }
 </script>
 <style scoped>
