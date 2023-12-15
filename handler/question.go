@@ -109,7 +109,7 @@ func (h *Handler) GetQuestions(c echo.Context) error {
 	for i, q := range questions {
 		user, err := h.urepo.FindUserByID(q.UserID)
 		if errors.Is(err, repository.ErrNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, err.Error())
+			continue
 		} else if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
