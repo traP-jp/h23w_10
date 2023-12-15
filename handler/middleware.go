@@ -15,7 +15,7 @@ func UserAuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		userID, ok := sess.Values["userID"].(string)
 		if !ok {
-			next(c)
+			return next(c)
 		}
 		c.Set("userID", userID)
 		return next(c)
