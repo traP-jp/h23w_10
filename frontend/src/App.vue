@@ -46,13 +46,6 @@ const handleLogin = async () => {
 }
 
 const router = useRouter()
-// const showUserInfo = async () => {
-//   try {
-//     router.push(`/users/${data.id}`)
-//   } catch (error) {
-//     console.error(error)
-//   }
-// }
 const showUserInfo = () => {
   router.push(`/users/${loginUser.value?.id}`)
 }
