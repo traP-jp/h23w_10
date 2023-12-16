@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { getMe, type User } from '@/lib/api/users'
 import { BASE } from '@/lib/api/index'
 import { useRouter } from 'vue-router'
@@ -46,23 +46,15 @@ const handleLogin = async () => {
 }
 
 const router = useRouter()
-const showUserInfo = async () => {
-  try {
-    const res = await fetch(`${BASE}/users/me`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
-      }
-    })
-    if (res.status === 401) {
-      window.alert('ログイン画面に遷移します')
-      handleLogin()
-      return
-    }
-    const data = await res.json()
-    router.push(`/users/${data.id}`)
-  } catch (error) {
-    console.error(error)
-  }
+// const showUserInfo = async () => {
+//   try {
+//     router.push(`/users/${data.id}`)
+//   } catch (error) {
+//     console.error(error)
+//   }
+// }
+const showUserInfo = () => {
+  router.push(`/users/${loginUser.value?.id}`)
 }
 
 onMounted(async () => {
