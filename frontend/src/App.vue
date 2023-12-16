@@ -26,11 +26,13 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import { ref, onMounted, onUnmounted } from 'vue'
+import { getMe, type User } from '@/lib/api/users'
 import { BASE } from '@/lib/api/index'
 import { useRouter } from 'vue-router'
 
 const showDrawer = ref(false)
 const isLoggedIn = ref(false)
+const loginUser = ref<User | null>(null)
 const toggleDrawer = () => (showDrawer.value = !showDrawer.value)
 
 const handleLogin = async () => {
@@ -63,17 +65,17 @@ const showUserInfo = async () => {
   }
 }
 
-const checkLoginStatus = () => {
-  const token = localStorage.getItem('access_token')
-  isLoggedIn.value = !!token
-}
-onMounted(() => {
-  checkLoginStatus()
-  window.addEventListener('storage', checkLoginStatus)
+onMounted(async () => {
+  try {
+    console.log('onMounted')
+    const res = await getMe()
+    loginUser.value = res
+    console.log(loginUser)
+  } catch (error) {
+    console.error(error)
+  }
 })
-onUnmounted(() => {
-  window.removeEventListener('storage', checkLoginStatus)
-})
+// })
 </script>
 
 <style scoped></style>

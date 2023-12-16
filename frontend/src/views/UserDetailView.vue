@@ -6,8 +6,6 @@
         <img :src="userInfo?.iconURL" alt="User Icon" />
       </v-col>
       <v-col cols="8">
-        <h1>所属班:</h1>
-        <h1>通算回答数：</h1>
         <h1>円形に表示するやつ</h1>
       </v-col>
     </v-row>
