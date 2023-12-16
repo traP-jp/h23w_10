@@ -7,8 +7,8 @@ import (
 	"image/png"
 	"net/http"
 	"os"
+	"path/filepath"
 
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/traP-jp/h23w_10/pkg/domain/repository"
 	"golang.org/x/sync/errgroup"
@@ -24,6 +24,10 @@ func (h *Handler) PostImage(c echo.Context) error {
 		return err
 	}
 
+	if _, err := os.Stat(filepath.Join("images", request.UserID+".png")); err == nil {
+		return c.File(filepath.Join("images", request.UserID+".png"))
+	}
+
 	user, err := h.urepo.FindUserByID(request.UserID)
 	if errors.Is(err, repository.ErrNotFound) {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -31,7 +35,7 @@ func (h *Handler) PostImage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	questions, _, err := h.qrepo.FindByUserID(request.UserID, &repository.FindQuestionsCondition{
-		Limit:  100,
+		Limit:  46,
 		Offset: 0,
 	})
 	if err != nil {
@@ -79,16 +83,15 @@ func (h *Handler) PostImage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	fileName := uuid.New().String()
-
-	file, err := os.Create(fileName + ".png")
+	filename := filepath.Join("images", user.ID+".png")
+	file, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 	png.Encode(file, res)
 
-	return c.File(fileName + ".png")
+	return c.File(filename)
 }
 
 func openImage(iconURL string) (image.Image, error) {
