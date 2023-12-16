@@ -19,6 +19,7 @@ import (
 	"github.com/traP-jp/h23w_10/handler"
 	"github.com/traP-jp/h23w_10/pkg/infra/repository"
 	"github.com/traP-jp/h23w_10/pkg/infra/trap"
+	"github.com/traP-jp/h23w_10/pkg/usecase/imggen"
 	"github.com/traPtitech/go-traq"
 	traqoauth2 "github.com/traPtitech/go-traq-oauth2"
 	"golang.org/x/oauth2"
@@ -49,12 +50,20 @@ func main() {
 		Scopes:       []string{"read"},
 	}
 
+	layerConfig := []imggen.LayerConfig{
+		imggen.NewLayerConfig(0, 1, 220),
+		imggen.NewLayerConfig(200, 8, 130),
+		imggen.NewLayerConfig(330, 16, 115),
+		imggen.NewLayerConfig(450, 21, 100),
+	}
+
 	h := handler.NewHandler(
 		trap.NewTrapService(traqClient),
 		repository.NewQuestionRepository(db),
 		repository.NewAnswerRepository(db),
 		repository.NewUserRepository(db),
 		oauth2Conf,
+		imggen.NewImggenService(layerConfig),
 	)
 
 	e := echo.New()
@@ -84,6 +93,8 @@ func main() {
 
 	api.GET("/oauth2/params", h.GetAuthParams)
 	api.GET("/oauth2/callback", h.Oauth2Callback)
+
+	api.POST("/imggen", h.PostImage)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

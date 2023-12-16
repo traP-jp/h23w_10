@@ -5,6 +5,7 @@ import (
 
 	"github.com/traP-jp/h23w_10/pkg/domain/repository"
 	"github.com/traP-jp/h23w_10/pkg/infra/trap"
+	"github.com/traP-jp/h23w_10/pkg/usecase/imggen"
 	"golang.org/x/oauth2"
 )
 
@@ -16,6 +17,8 @@ type Handler struct {
 	urepo repository.UserRepository
 
 	oauth2Config oauth2.Config
+
+	imggenSvc *imggen.ImggenService
 }
 
 func NewHandler(
@@ -24,6 +27,7 @@ func NewHandler(
 	arepo repository.AnswerRepository,
 	urepo repository.UserRepository,
 	oauth2Conf oauth2.Config,
+	imggenSvc *imggen.ImggenService,
 ) *Handler {
 	gob.Register(&oauth2.Token{})
 	return &Handler{
@@ -34,6 +38,8 @@ func NewHandler(
 		urepo: urepo,
 
 		oauth2Config: oauth2Conf,
+
+		imggenSvc: imggenSvc,
 	}
 }
 
