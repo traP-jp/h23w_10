@@ -2,9 +2,12 @@ package imggen
 
 import (
 	"context"
+	"errors"
 	"image"
 	"image/color"
+	_ "image/gif"
 	"math"
+	"net/http"
 
 	"golang.org/x/image/draw"
 )
@@ -33,15 +36,13 @@ func NewLayerConfig(radius int, number int, size int) LayerConfig {
 	}
 }
 
-func (i *ImggenService) GenerateImage(ctx context.Context, icons <-chan image.Image) (image.Image, error) {
+func (i *ImggenService) GenerateImage(ctx context.Context, total int, icons <-chan image.Image) (image.Image, error) {
 	res := image.NewRGBA(image.Rect(0, 0, 1024, 1024))
-
-	left := len(icons) // 残りの画像の枚数
 
 	// 各レイヤーごとの処理
 LOOP:
 	for _, c := range i.layerConfig {
-		for i := 0; i < min(c.number, left); i++ {
+		for i := 0; i < min(c.number, total); i++ {
 			var icon image.Image
 			select {
 			case <-ctx.Done():
@@ -57,7 +58,7 @@ LOOP:
 			draw.CatmullRom.Scale(icon_resized, icon_resized.Bounds(), icon, icon.Bounds(), draw.Over, nil)
 
 			// 各レイヤーで定められた位置に，円形に切り抜いてから配置
-			theta := 2 * math.Pi * float64(i) / float64(min(c.number, left))
+			theta := 2 * math.Pi * float64(i) / float64(min(c.number, total))
 			pos := image.Point{
 				X: (1024-c.size)/2 + int(float64(c.radius)*math.Cos(theta)),
 				Y: (1024-c.size)/2 - int(float64(c.radius)*math.Sin(theta)),
@@ -78,7 +79,7 @@ LOOP:
 				draw.Over,
 			)
 		}
-		left -= c.number
+		total -= c.number
 	}
 	return res, nil
 }
@@ -103,4 +104,23 @@ func (c *circle) At(x, y int) color.Color {
 		return color.Alpha{255}
 	}
 	return color.Alpha{0}
+}
+
+// 画像取得
+func openImage(iconURL string) (image.Image, error) {
+	response, err := http.Get(iconURL)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return nil, errors.New("not StatusOK")
+	}
+
+	img, _, err := image.Decode(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	return img, nil
 }

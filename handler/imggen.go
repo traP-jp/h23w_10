@@ -70,7 +70,7 @@ func (h *Handler) PostImage(c echo.Context) error {
 		return nil
 	})
 	// 画像を生成する
-	res, err := h.imggenSvc.GenerateImage(ctx, icons)
+	res, err := h.imggenSvc.GenerateImage(ctx, 1+len(iconURLs), icons)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
