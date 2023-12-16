@@ -8,12 +8,10 @@
     <v-app-bar>
       <v-app-bar-nav-icon @click="toggleDrawer" />
       <v-app-bar-title>staQoverflow</v-app-bar-title>
-      <template v-if="!isLoggedIn">
-        <v-icon>mdi-account</v-icon>
-        <p>yu-za-na-me</p>
+      <template v-if="isLoggedIn">
         <v-btn color="primary" @click="showUserInfo">ユーザー情報</v-btn>
       </template>
-      <template v-if="!isLoggedIn">
+      <template v-else>
         <v-btn color="primary" @click="handleLogin">ログイン</v-btn>
       </template>
     </v-app-bar>
@@ -27,12 +25,14 @@
 
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import { ref, computed } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { BASE } from '@/lib/api/index'
 import { useRouter } from 'vue-router'
 
 const showDrawer = ref(false)
+const isLoggedIn = ref(false)
 const toggleDrawer = () => (showDrawer.value = !showDrawer.value)
+
 const handleLogin = async () => {
   try {
     const res = await fetch(`${BASE}/oauth2/params`, {})
@@ -62,7 +62,18 @@ const showUserInfo = async () => {
     console.error(error)
   }
 }
-const isLoggedIn = computed(() => localStorage.getItem('access_token'))
+
+const checkLoginStatus = () => {
+  const token = localStorage.getItem('access_token')
+  isLoggedIn.value = !!token
+}
+onMounted(() => {
+  checkLoginStatus()
+  window.addEventListener('storage', checkLoginStatus)
+})
+onUnmounted(() => {
+  window.removeEventListener('storage', checkLoginStatus)
+})
 </script>
 
 <style scoped></style>
