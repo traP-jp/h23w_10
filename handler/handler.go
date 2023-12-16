@@ -45,4 +45,5 @@ func NewHandler(
 
 const (
 	sessionName = "h23w_10"
+	imagesDir   = "images"
 )

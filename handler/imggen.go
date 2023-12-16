@@ -24,8 +24,8 @@ func (h *Handler) PostImage(c echo.Context) error {
 		return err
 	}
 
-	if _, err := os.Stat(filepath.Join("images", request.UserID+".png")); err == nil {
-		return c.File(filepath.Join("images", request.UserID+".png"))
+	if _, err := os.Stat(filepath.Join(imagesDir, request.UserID+".png")); err == nil {
+		return c.File(filepath.Join(imagesDir, request.UserID+".png"))
 	}
 
 	user, err := h.urepo.FindUserByID(request.UserID)
@@ -83,7 +83,7 @@ func (h *Handler) PostImage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	filename := filepath.Join("images", user.ID+".png")
+	filename := filepath.Join(imagesDir, user.ID+".png")
 	file, err := os.Create(filename)
 	if err != nil {
 		return err
