@@ -71,11 +71,13 @@ onMounted(async () => {
     const res = await getMe()
     loginUser.value = res
     console.log(loginUser)
+    if (loginUser.value) {
+      isLoggedIn.value = true
+    }
   } catch (error) {
     console.error(error)
   }
 })
-// })
 </script>
 
 <style scoped></style>
