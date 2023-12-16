@@ -1,4 +1,4 @@
-import { BASE } from '.'
+import { BASE, useMock } from '.'
 
 export type Tag = {
   id: string
@@ -9,7 +9,7 @@ export type GetTagsRequest = {}
 export type GetTagsResponse = Tag[]
 
 export const getTags = async (req?: GetTagsRequest): Promise<GetTagsResponse> => {
-  if (import.meta.env.DEV) {
+  if (useMock) {
     const { getTagsMock } = await import('./mock')
     return getTagsMock(req)
   }
@@ -28,7 +28,7 @@ export type PostTagRequest = {
 export type PostTagResponse = Tag
 
 export const postTag = async (req: PostTagRequest): Promise<PostTagResponse> => {
-  if (import.meta.env.DEV) {
+  if (useMock) {
     const { postTagMock } = await import('./mock')
     return postTagMock(req)
   }

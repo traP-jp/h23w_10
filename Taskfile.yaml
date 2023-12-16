@@ -24,3 +24,9 @@ tasks:
   log:
     cmds:
       - docker compose logs -f server
+
+  bot:
+    dotenv:
+      - ".env"
+    cmds:
+      - go run cmd/bot/main.go

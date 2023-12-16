@@ -1,4 +1,4 @@
-import { BASE } from '.'
+import { BASE, useMock } from '.'
 import type { Question } from './questions'
 import type { User } from './users'
 
@@ -14,7 +14,7 @@ export type PostAnswerRequest = Omit<Answer, 'id' | 'createdAt'>
 export type PostAnswerResponse = Answer
 
 export const postAnswer = async (req: PostAnswerRequest): Promise<PostAnswerResponse> => {
-  if (import.meta.env.DEV) {
+  if (useMock) {
     const { postAnswerMock } = await import('./mock')
     return postAnswerMock(req)
   }

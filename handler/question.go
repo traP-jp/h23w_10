@@ -2,6 +2,8 @@ package handler
 
 import (
 	"errors"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -13,20 +15,38 @@ import (
 	"github.com/traP-jp/h23w_10/pkg/domain/repository"
 )
 
+type User struct {
+	ID          string `json:"id,omitempty"`
+	Name        string `json:"name,omitempty"`
+	DisplayName string `json:"display_name,omitempty"`
+	IconURL     string `json:"icon_url,omitempty"`
+	UserType    string `json:"user_type,omitempty"`
+}
+
 type QuestionWithUser struct {
 	ID        string                `json:"id,omitempty"`
-	User      domain.User           `json:"user,omitempty"`
+	User      User                  `json:"user,omitempty"`
 	Title     string                `json:"title,omitempty"`
 	Content   string                `json:"content,omitempty"`
 	CreatedAt time.Time             `json:"created_at,omitempty"`
 	Tags      []domain.Tag          `json:"tags,omitempty"`
-	Answers   []domain.Answer       `json:"answers,omitempty"`
 	Status    domain.QuestionStatus `json:"status,omitempty"`
 }
 
 type GetQuestionsResponse struct {
 	Total     int                `json:"total,omitempty"`
 	Questions []QuestionWithUser `json:"questions,omitempty"`
+}
+
+type GetQuestionByIDResponse struct {
+	ID        string                `json:"id,omitempty"`
+	User      User                  `json:"user,omitempty"`
+	Title     string                `json:"title,omitempty"`
+	Content   string                `json:"content,omitempty"`
+	CreatedAt time.Time             `json:"created_at,omitempty"`
+	Tags      []domain.Tag          `json:"tags,omitempty"`
+	Answers   []domain.Answer       `json:"answers,omitempty"`
+	Status    domain.QuestionStatus `json:"status,omitempty"`
 }
 
 type GetTagsResponse struct {
@@ -40,6 +60,7 @@ type PostQuestionRequest struct {
 	Content string       `json:"content,omitempty"`
 	Tags    []domain.Tag `json:"tags,omitempty"`
 	Status  string       `json:"status,omitempty"`
+	BotPost bool         `json:"bot_post,omitempty"`
 }
 
 type PostQuestionResponse struct {
@@ -105,24 +126,30 @@ func (h *Handler) GetQuestions(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	result := make([]QuestionWithUser, len(questions))
-	for i, q := range questions {
+	result := make([]QuestionWithUser, 0, len(questions))
+	for _, q := range questions {
 		user, err := h.urepo.FindUserByID(q.UserID)
 		if errors.Is(err, repository.ErrNotFound) {
+			total--
 			continue
 		} else if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
-		result[i] = QuestionWithUser{
-			ID:        q.ID,
-			User:      *user,
+		result = append(result, QuestionWithUser{
+			ID: q.ID,
+			User: User{
+				ID:          user.ID,
+				Name:        user.Name,
+				DisplayName: user.DisplayName,
+				IconURL:     user.IconURL.String(),
+				UserType:    string(user.UserType),
+			},
 			Title:     q.Title,
 			Content:   q.Content,
 			CreatedAt: q.CreatedAt,
 			Tags:      q.Tags,
-			Answers:   q.Answers,
 			Status:    q.Status,
-		}
+		})
 	}
 
 	response := GetQuestionsResponse{
@@ -134,7 +161,14 @@ func (h *Handler) GetQuestions(c echo.Context) error {
 
 func (h *Handler) GetQuestionByID(c echo.Context) error {
 	id := c.Param("id")
-	response, err := h.qrepo.FindByID(id)
+	question, err := h.qrepo.FindByID(id)
+	if errors.Is(err, repository.ErrNotFound) {
+		return echo.NewHTTPError(http.StatusNotFound, err.Error())
+	} else if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	user, err := h.urepo.FindUserByID(question.UserID)
 	if errors.Is(err, repository.ErrNotFound) {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	} else if err != nil {
@@ -145,8 +179,76 @@ func (h *Handler) GetQuestionByID(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	response.Answers = answers
+	question.Answers = answers
+
+	response := GetQuestionByIDResponse{
+		ID: question.ID,
+		User: User{
+			ID:          user.ID,
+			Name:        user.Name,
+			DisplayName: user.DisplayName,
+			IconURL:     user.IconURL.String(),
+			UserType:    string(user.UserType),
+		},
+		Title:     question.Title,
+		Content:   question.Content,
+		CreatedAt: question.CreatedAt,
+		Tags:      question.Tags,
+		Answers:   question.Answers,
+		Status:    question.Status,
+	}
+
 	return c.JSON(http.StatusOK, response)
+}
+
+func (h *Handler) PostQuestion(c echo.Context) error {
+	var request PostQuestionRequest
+	if err := c.Bind(&request); err != nil {
+		return err
+	}
+
+	if uid := c.Get("userID"); uid != request.UserID {
+		return echo.NewHTTPError(http.StatusForbidden, "not allowed to create")
+	}
+
+	question := &domain.Question{
+		ID:        domain.NewUUID(),
+		UserID:    request.UserID,
+		Title:     request.Title,
+		Content:   request.Content,
+		CreatedAt: time.Now(),
+		Tags:      request.Tags,
+		Status:    domain.QuestionStatus(request.Status),
+	}
+	result, err := h.qrepo.Create(question)
+	if err != nil {
+		return err
+	}
+
+	response := PostQuestionResponse{
+		ID:        result.ID,
+		UserID:    result.UserID,
+		Title:     result.Title,
+		Content:   result.Content,
+		CreatedAt: result.CreatedAt.String(),
+		Tags:      result.Tags,
+		Status:    string(result.Status),
+	}
+
+	go func() {
+		if request.BotPost {
+			err := h.trapSvc.PostQuestionInfo(
+				request.Title,
+				request.Content,
+				fmt.Sprintf("https://staqoverflow.trap.show/questions/%s", result.ID),
+			)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+	}()
+
+	return c.JSON(http.StatusCreated, response)
 }
 
 func (h *Handler) PutQuestion(c echo.Context) error {
@@ -195,43 +297,6 @@ func (h *Handler) GetTags(c echo.Context) error {
 		}
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-func (h *Handler) PostQuestion(c echo.Context) error {
-	var request PostQuestionRequest
-	if err := c.Bind(&request); err != nil {
-		return err
-	}
-
-	if uid := c.Get("userID"); uid != request.UserID {
-		return echo.NewHTTPError(http.StatusForbidden, "not allowed to create")
-	}
-
-	question := &domain.Question{
-		ID:        domain.NewUUID(),
-		UserID:    request.UserID,
-		Title:     request.Title,
-		Content:   request.Content,
-		CreatedAt: time.Now(),
-		Tags:      request.Tags,
-		Status:    domain.QuestionStatus(request.Status),
-	}
-	result, err := h.qrepo.Create(question)
-	if err != nil {
-		return err
-	}
-
-	response := PostQuestionResponse{
-		ID:        result.ID,
-		UserID:    result.UserID,
-		Title:     result.Title,
-		Content:   result.Content,
-		CreatedAt: result.CreatedAt.String(),
-		Tags:      result.Tags,
-		Status:    string(result.Status),
-	}
-
-	return c.JSON(http.StatusCreated, response)
 }
 
 func (h *Handler) PostTag(c echo.Context) error {

@@ -11,11 +11,15 @@ import (
 
 type TrapService struct {
 	traqClient *traq.APIClient
+	botToken   string
+	channelID  string
 }
 
-func NewTrapService(traqClient *traq.APIClient) *TrapService {
+func NewTrapService(traqClient *traq.APIClient, botToken string, channleID string) *TrapService {
 	return &TrapService{
 		traqClient: traqClient,
+		botToken:   botToken,
+		channelID:  channleID,
 	}
 }
 

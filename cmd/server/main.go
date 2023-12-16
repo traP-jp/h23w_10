@@ -50,6 +50,9 @@ func main() {
 		Scopes:       []string{"read"},
 	}
 
+	botToken := getEnvOrDefault("BOT_TOKEN", "")
+	channelID := getEnvOrDefault("CHANNEL_ID", "")
+
 	layerConfig := []imggen.LayerConfig{
 		imggen.NewLayerConfig(0, 1, 220),
 		imggen.NewLayerConfig(200, 8, 130),
@@ -58,7 +61,7 @@ func main() {
 	}
 
 	h := handler.NewHandler(
-		trap.NewTrapService(traqClient),
+		trap.NewTrapService(traqClient, botToken, channelID),
 		repository.NewQuestionRepository(db),
 		repository.NewAnswerRepository(db),
 		repository.NewUserRepository(db),
