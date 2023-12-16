@@ -69,7 +69,6 @@
                   閉じる
                 </v-btn>
               </div>
-
               <v-tooltip location="bottom" :disabled="canPostTag">
                 <template v-slot:activator="{ props }">
                   <span v-bind="props">
