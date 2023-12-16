@@ -2,6 +2,8 @@ package handler
 
 import (
 	"errors"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -58,6 +60,7 @@ type PostQuestionRequest struct {
 	Content string       `json:"content,omitempty"`
 	Tags    []domain.Tag `json:"tags,omitempty"`
 	Status  string       `json:"status,omitempty"`
+	BotPost bool         `json:"bot_post,omitempty"`
 }
 
 type PostQuestionResponse struct {
@@ -198,6 +201,56 @@ func (h *Handler) GetQuestionByID(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+func (h *Handler) PostQuestion(c echo.Context) error {
+	var request PostQuestionRequest
+	if err := c.Bind(&request); err != nil {
+		return err
+	}
+
+	if uid := c.Get("userID"); uid != request.UserID {
+		return echo.NewHTTPError(http.StatusForbidden, "not allowed to create")
+	}
+
+	question := &domain.Question{
+		ID:        domain.NewUUID(),
+		UserID:    request.UserID,
+		Title:     request.Title,
+		Content:   request.Content,
+		CreatedAt: time.Now(),
+		Tags:      request.Tags,
+		Status:    domain.QuestionStatus(request.Status),
+	}
+	result, err := h.qrepo.Create(question)
+	if err != nil {
+		return err
+	}
+
+	response := PostQuestionResponse{
+		ID:        result.ID,
+		UserID:    result.UserID,
+		Title:     result.Title,
+		Content:   result.Content,
+		CreatedAt: result.CreatedAt.String(),
+		Tags:      result.Tags,
+		Status:    string(result.Status),
+	}
+
+	go func() {
+		if request.BotPost {
+			err := h.trapSvc.PostQuestionInfo(
+				request.Title,
+				request.Content,
+				fmt.Sprintf("https://staqoverflow.trap.show/questions/%s", result.ID),
+			)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+	}()
+
+	return c.JSON(http.StatusCreated, response)
+}
+
 func (h *Handler) PutQuestion(c echo.Context) error {
 	var req PutQuestionRequest
 	if err := c.Bind(&req); err != nil {
@@ -244,43 +297,6 @@ func (h *Handler) GetTags(c echo.Context) error {
 		}
 	}
 	return c.JSON(http.StatusOK, response)
-}
-
-func (h *Handler) PostQuestion(c echo.Context) error {
-	var request PostQuestionRequest
-	if err := c.Bind(&request); err != nil {
-		return err
-	}
-
-	if uid := c.Get("userID"); uid != request.UserID {
-		return echo.NewHTTPError(http.StatusForbidden, "not allowed to create")
-	}
-
-	question := &domain.Question{
-		ID:        domain.NewUUID(),
-		UserID:    request.UserID,
-		Title:     request.Title,
-		Content:   request.Content,
-		CreatedAt: time.Now(),
-		Tags:      request.Tags,
-		Status:    domain.QuestionStatus(request.Status),
-	}
-	result, err := h.qrepo.Create(question)
-	if err != nil {
-		return err
-	}
-
-	response := PostQuestionResponse{
-		ID:        result.ID,
-		UserID:    result.UserID,
-		Title:     result.Title,
-		Content:   result.Content,
-		CreatedAt: result.CreatedAt.String(),
-		Tags:      result.Tags,
-		Status:    string(result.Status),
-	}
-
-	return c.JSON(http.StatusCreated, response)
 }
 
 func (h *Handler) PostTag(c echo.Context) error {

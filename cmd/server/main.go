@@ -49,8 +49,11 @@ func main() {
 		Scopes:       []string{"read"},
 	}
 
+	botToken := getEnvOrDefault("BOT_TOKEN", "")
+	channelID := getEnvOrDefault("CHANNEL_ID", "")
+
 	h := handler.NewHandler(
-		trap.NewTrapService(traqClient),
+		trap.NewTrapService(traqClient, botToken, channelID),
 		repository.NewQuestionRepository(db),
 		repository.NewAnswerRepository(db),
 		repository.NewUserRepository(db),

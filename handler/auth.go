@@ -31,7 +31,6 @@ func (h *Handler) GetAuthParams(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"url": url})
 }
 
-// TODO: traqのgetmeを叩いて、ユーザー情報をdbに保存する
 func (h *Handler) Oauth2Callback(c echo.Context) error {
 	code := c.QueryParam("code")
 	state := c.QueryParam("state")
