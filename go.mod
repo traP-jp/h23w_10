@@ -13,7 +13,9 @@ require (
 	github.com/samber/lo v1.39.0
 	github.com/traPtitech/go-traq v0.0.0-20231208054503-2e91b85cdb2e
 	github.com/traPtitech/go-traq-oauth2 v0.0.0-20231128211850-d34d8c287ff9
+	golang.org/x/image v0.14.0
 	golang.org/x/oauth2 v0.15.0
+	golang.org/x/sync v0.2.0
 )
 
 require (
