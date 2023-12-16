@@ -29,6 +29,7 @@ onMounted(async () => {
     const res = await getUser(request)
     userInfo.value = res
     userName.value = res.name
+    console.log(userInfo.value.name)
     console.log(userInfo.value.iconURL)
   } catch (err) {
     console.error(err)
