@@ -34,7 +34,14 @@ const randomChoice = <T>(arr: T[], count: number): T[] => {
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const answers: Answer[] = []
-const users: User[] = []
+const users: User[] = [
+  {
+    id: 'test-user-0',
+    name: 'テストユーザー',
+    iconURL: 'https://placehold.jp/150x150.png',
+    userType: 'trap'
+  }
+]
 const questions: Question[] = new Array(100)
   .fill({
     content: 'テストの質問です',
@@ -152,6 +159,15 @@ export const postTagMock = async (req: PostTagRequest): Promise<PostTagResponse>
 export const getUserMock = async (req: GetUserRequest): Promise<GetUserResponse> => {
   await sleep(1000)
   const user = users.find((user) => user.id === req.id)
+  if (!user) {
+    throw new Error('Not found')
+  }
+  return user
+}
+
+export const getMeMock = async (): Promise<GetUserResponse> => {
+  await sleep(1000)
+  const user = users[0]
   if (!user) {
     throw new Error('Not found')
   }

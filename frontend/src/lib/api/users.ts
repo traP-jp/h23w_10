@@ -9,6 +9,23 @@ export type User = {
   userType: UserType
 }
 
+
+export type GetMeResponse = User
+
+export const getMe = async (): Promise<GetMeResponse> => {
+  if (useMock) {
+    const { getMeMock } = await import('./mock')
+    return getMeMock()
+  }
+
+  const res = await fetch(`${BASE}/users/me`)
+  if (!res.ok) {
+    throw new Error(res.statusText)
+  }
+  const json: GetMeResponse = await res.json()
+  return json
+}
+
 export type GetUserRequest = {
   id: User['id']
 }
