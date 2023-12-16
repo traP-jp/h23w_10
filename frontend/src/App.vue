@@ -8,7 +8,7 @@
     <v-app-bar>
       <v-app-bar-nav-icon @click="toggleDrawer" />
       <v-app-bar-title>staQoverflow</v-app-bar-title>
-      <template v-if="isLoggedIn">
+      <template v-if="loginUser !== null">
         <v-btn color="primary" @click="showUserInfo">ユーザー情報</v-btn>
       </template>
       <template v-else>
@@ -31,7 +31,6 @@ import { BASE } from '@/lib/api/index'
 import { useRouter } from 'vue-router'
 
 const showDrawer = ref(false)
-const isLoggedIn = ref(false)
 const loginUser = ref<User | null>(null)
 const toggleDrawer = () => (showDrawer.value = !showDrawer.value)
 
@@ -55,10 +54,8 @@ onMounted(async () => {
     console.log('onMounted')
     const res = await getMe()
     loginUser.value = res
-    if (loginUser.value) {
-      isLoggedIn.value = true
-    }
   } catch (error) {
+    loginUser.value = null
     console.error(error)
   }
 })
