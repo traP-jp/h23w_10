@@ -29,8 +29,6 @@ onMounted(async () => {
     const res = await getUser(request)
     userInfo.value = res
     userName.value = res.name
-    console.log(res)
-    console.log(userInfo)
   } catch (err) {
     console.error(err)
   }
