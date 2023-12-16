@@ -8,12 +8,12 @@
     <v-app-bar>
       <v-app-bar-nav-icon @click="toggleDrawer" />
       <v-app-bar-title>staQoverflow</v-app-bar-title>
-      <template v-if="isLoggedIn">
+      <template v-if="!isLoggedIn">
         <v-icon>mdi-account</v-icon>
         <p>yu-za-na-me</p>
         <v-btn color="primary" @click="showUserInfo">ユーザー情報</v-btn>
       </template>
-      <template v-else>
+      <template v-if="!isLoggedIn">
         <v-btn color="primary" @click="handleLogin">ログイン</v-btn>
       </template>
     </v-app-bar>
