@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/labstack/echo/v4"
+	"github.com/traP-jp/h23w_10/pkg/domain"
 	"github.com/traP-jp/h23w_10/pkg/domain/repository"
 	"golang.org/x/sync/errgroup"
 )
@@ -35,8 +36,9 @@ func (h *Handler) PostImage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	questions, _, err := h.qrepo.FindByUserID(request.UserID, &repository.FindQuestionsCondition{
-		Limit:  46,
-		Offset: 0,
+		Limit:    46,
+		Offset:   0,
+		Statuses: []domain.QuestionStatus{domain.QuestionStatusOpen, domain.QuestionStatusClosed},
 	})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
