@@ -94,7 +94,8 @@
 <script setup lang="ts">
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, inject, type Ref } from 'vue'
+import { type User } from '@/lib/api/users'
 import { postQuestion } from '@/lib/api/questions'
 import { getTags, postTag, type Tag } from '@/lib/api/tags'
 import { useRouter } from 'vue-router'
@@ -109,6 +110,7 @@ const form = reactive<{ title: string; content: string; tags: Tag[] }>({
 })
 const tags = await getTags()
 const router = useRouter()
+const loginUser = inject<Ref<User | null>>('loginUser')
 
 const canPostQuestion = computed(() => {
   return form.title.length > 0 && form.content.length > 0
@@ -131,7 +133,7 @@ const postNewQuestion = async () => {
   const selectedTagIds: Omit<Tag, 'name'>[] = form.tags.map((tag) => ({ id: tag.id }))
   try {
     const res = await postQuestion({
-      userId: 'masky', //TODO： ログインユーザーのIDを取得する
+      userId: loginUser?.userId,
       title: form.title,
       content: form.content,
       tags: selectedTagIds,

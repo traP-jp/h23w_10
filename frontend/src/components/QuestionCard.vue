@@ -21,7 +21,7 @@
             {{ props.question.answers.length }}件の回答
           </div>
           <div :class="`${$style.status} text-caption`">
-            {{ props.question.userId }}
+            {{ user?.name }}
             <v-tooltip :text="diffHuman(props.question.createdAt).localeString" location="top">
               <template v-slot:activator="{ props: tooltipProps }">
                 <span v-bind="tooltipProps">
@@ -38,6 +38,8 @@
 
 <script setup lang="ts">
 import { diffHuman } from '@/lib/format'
+import { ref, onMounted } from 'vue'
+import { getUser, type User } from '@/lib/api/users'
 import QuestionTag from './QuestionTag.vue'
 import QuestionStatus from './QuestionStatus.vue'
 import type { Question } from '@/lib/api/questions'
@@ -46,6 +48,17 @@ export interface Props {
   question: Question
 }
 const props = defineProps<Props>()
+
+const user = ref<User>()
+
+onMounted(async () => {
+  try {
+    const res = await getUser({ id: props.question.userId })
+    user.value = res
+  } catch (err) {
+    console.error(err)
+  }
+})
 </script>
 
 <style module>
