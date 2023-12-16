@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="4">
         <h1>User Name: {{ userInfo?.name }}</h1>
-        <img :src="userInfo?.iconURL" alt="User Icon" />
+        <img :src="userInfo?.icon_url" alt="User Icon" />
       </v-col>
       <v-col cols="8">
         <h1>円形に表示するやつ</h1>

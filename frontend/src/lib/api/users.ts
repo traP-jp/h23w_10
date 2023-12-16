@@ -5,7 +5,7 @@ export type UserType = 'trap' | 'external'
 export type User = {
   id: string
   name: string
-  iconURL: string
+  icon_url: string
   userType: UserType
 }
 
