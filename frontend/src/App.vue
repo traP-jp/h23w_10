@@ -51,7 +51,6 @@ const showUserInfo = () => {
 
 onMounted(async () => {
   try {
-    console.log('onMounted')
     const res = await getMe()
     loginUser.value = res
   } catch (error) {
