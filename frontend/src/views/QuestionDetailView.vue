@@ -10,7 +10,7 @@
       </div>
       <div class="text-end">
         <v-chip variant="text" color="grey">{{ user?.name }}</v-chip>
-        ><v-chip variant="text" color="grey"
+        <v-chip variant="text" color="grey"
           >投稿日:{{ question.createdAt ? question.createdAt.toLocaleDateString() : '' }}</v-chip
         >
       </div>

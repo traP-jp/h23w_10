@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, provide } from 'vue'
 import { getMe, type User } from '@/lib/api/users'
 import { BASE } from '@/lib/api/index'
 import { useRouter } from 'vue-router'
@@ -58,6 +58,8 @@ onMounted(async () => {
     console.error(error)
   }
 })
+
+provide('loginUser', loginUser)
 </script>
 
 <style scoped></style>
