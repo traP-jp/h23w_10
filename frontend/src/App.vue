@@ -55,7 +55,6 @@ onMounted(async () => {
     console.log('onMounted')
     const res = await getMe()
     loginUser.value = res
-    console.log(loginUser)
     if (loginUser.value) {
       isLoggedIn.value = true
     }
