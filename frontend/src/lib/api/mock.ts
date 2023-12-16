@@ -38,7 +38,7 @@ const users: User[] = [
   {
     id: 'test-user-0',
     name: 'テストユーザー',
-    iconURL: 'https://placehold.jp/150x150.png',
+    icon_url: 'https://placehold.jp/150x150.png',
     userType: 'trap'
   }
 ]
