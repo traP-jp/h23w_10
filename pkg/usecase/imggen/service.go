@@ -8,6 +8,8 @@ import (
 	_ "image/gif"
 	"math"
 	"net/http"
+	"os"
+	"time"
 
 	"golang.org/x/image/draw"
 )
@@ -17,6 +19,8 @@ type ImggenService struct {
 }
 
 func NewImggenService(layerConfig []LayerConfig) *ImggenService {
+	go cleaner("images", 1*time.Hour)
+	os.Mkdir("images", 0777)
 	return &ImggenService{
 		layerConfig: layerConfig,
 	}
