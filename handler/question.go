@@ -204,10 +204,11 @@ func (h *Handler) GetQuestionByID(c echo.Context) error {
 func (h *Handler) PostQuestion(c echo.Context) error {
 	var request PostQuestionRequest
 	if err := c.Bind(&request); err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	if uid := c.Get("userID"); uid != request.UserID {
+		log.Printf("uid: %s, request.UserID: %s", uid, request.UserID)
 		return echo.NewHTTPError(http.StatusForbidden, "not allowed to create")
 	}
 
@@ -222,7 +223,7 @@ func (h *Handler) PostQuestion(c echo.Context) error {
 	}
 	result, err := h.qrepo.Create(question)
 	if err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	response := PostQuestionResponse{
