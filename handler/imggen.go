@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"image"
 	"image/png"
@@ -9,10 +10,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"github.com/traP-jp/h23w_10/pkg/domain/repository"
+	"golang.org/x/sync/errgroup"
 )
 
 type PostImageRequest struct {
-	IconURLs []string `json:"icon_url,omitempty"`
+	UserID string `json:"user_id,omitempty"`
 }
 
 func (h *Handler) PostImage(c echo.Context) error {
@@ -20,16 +23,59 @@ func (h *Handler) PostImage(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return err
 	}
-	icons := make([]image.Image, len(request.IconURLs))
-	for i, iconURL := range request.IconURLs {
-		var err error
-		icons[i], err = openImage(iconURL)
+
+	user, err := h.urepo.FindUserByID(request.UserID)
+	if errors.Is(err, repository.ErrNotFound) {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	} else if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	questions, _, err := h.qrepo.FindByUserID(request.UserID, &repository.FindQuestionsCondition{
+		Limit:  100,
+		Offset: 0,
+	})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	iconURLs := make(map[string]struct{})
+	for _, question := range questions {
+		a, err := h.arepo.FindByQuestionID(question.ID)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
+		for _, answer := range a {
+			if answer.UserID != request.UserID {
+				iconURLs[answer.UserID] = struct{}{}
+			}
+		}
 	}
-	res, err := h.imggenSvc.GenerateImage(icons)
+	// チャンネルにアイコン画像を送っていく
+	eg, ctx := errgroup.WithContext(context.Background())
+	icons := make(chan image.Image)
+	eg.Go(func() error {
+		img, err := openImage(user.IconURL.String())
+		if err != nil {
+			return err
+		}
+		icons <- img
+		for iconURL := range iconURLs {
+			img, err := openImage(iconURL)
+			if err != nil {
+				return err
+			}
+			icons <- img
+		}
+		close(icons)
+		return nil
+	})
+	// 画像を生成する
+	res, err := h.imggenSvc.GenerateImage(ctx, icons)
 	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	if err := eg.Wait(); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
@@ -40,8 +86,8 @@ func (h *Handler) PostImage(c echo.Context) error {
 		return err
 	}
 	defer file.Close()
-
 	png.Encode(file, res)
+
 	return c.File(fileName + ".png")
 }
 

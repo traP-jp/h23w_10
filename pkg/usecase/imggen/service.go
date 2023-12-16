@@ -1,6 +1,7 @@
 package imggen
 
 import (
+	"context"
 	"image"
 	"image/color"
 	"math"
@@ -32,22 +33,23 @@ func NewLayerConfig(radius int, number int, size int) LayerConfig {
 	}
 }
 
-func (i *ImggenService) GenerateImage(icons []image.Image) (image.Image, error) {
+func (i *ImggenService) GenerateImage(ctx context.Context, icons <-chan image.Image) (image.Image, error) {
 	res := image.NewRGBA(image.Rect(0, 0, 1024, 1024))
 
-	index := 0
 	left := len(icons) // 残りの画像の枚数
 
 	// 各レイヤーごとの処理
+LOOP:
 	for _, c := range i.layerConfig {
 		for i := 0; i < min(c.number, left); i++ {
 			var icon image.Image
-			if index < len(icons) {
-				icon = icons[index]
-				index++
-			} else {
-				// 埋める画像がなくなった場合，ただの透過画像に
-				icon = image.NewRGBA(image.Rect(0, 0, 256, 256))
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case icon = <-icons:
+				if icon == nil {
+					break LOOP
+				}
 			}
 
 			// 各レイヤーで定められた大きさにリサイズ
