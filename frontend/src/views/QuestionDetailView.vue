@@ -10,11 +10,9 @@
       </div>
       <div class="text-end">
         <v-chip variant="text" color="grey">{{ question.user.name }}</v-chip>
-        <v-chip variant="text" color="grey"
-          >投稿日:{{
-            question.created_at ? parseDate(question.created_at).toLocaleDateString() : ''
-          }}</v-chip
-        >
+        <v-chip variant="text" color="grey">投稿日:{{
+          question.created_at ? parseDate(question.created_at).toLocaleDateString() : ''
+        }}</v-chip>
       </div>
     </div>
     <div class="post-metadata">
@@ -25,41 +23,21 @@
       </div>
     </div>
     <v-divider :thickness="1"></v-divider>
-    <DetailCard
-      :editorId="editorId"
-      :content="question.content"
-      :user="question.user"
-      :createdAt="parseDate(question.created_at)"
-      :showModal="showModal"
-      :isQuestion="true"
-      :isQuestionResolved="isQuestionResolved"
-      @update:isQuestionResolved="isQuestionResolved = $event"
-    />
+    <DetailCard :editorId="editorId" :content="question.content" :user="question.user"
+      :createdAt="parseDate(question.created_at)" :showModal="showModal" :isQuestion="true"
+      :isQuestionResolved="isQuestionResolved" @update:isQuestionResolved="isQuestionResolved = $event" />
     <v-divider :thickness="2"></v-divider>
     <div class="ma-2 ml-0">
       <h2>{{ answers.length }}件の回答</h2>
     </div>
     <div class="answers">
-      <DetailCard
-        v-for="answer in answers"
-        :key="answer.id"
-        :editorId="editorId"
-        :content="answer.content"
-        :user="answer.user"
-        :createdAt="parseDate(answer.created_at)"
-        :showModal="showModal"
-        :isQuestion="false"
-        :isQuestionResolved="isQuestionResolved"
-        @update:isQuestionResolved="isQuestionResolved = $event"
-      />
+      <DetailCard v-for="answer in answers" :key="answer.id" :editorId="editorId" :content="answer.content"
+        :user="answer.user" :createdAt="parseDate(answer.created_at)" :showModal="showModal" :isQuestion="false"
+        :isQuestionResolved="isQuestionResolved" @update:isQuestionResolved="isQuestionResolved = $event" />
     </div>
-    <div
-      class="d-flex justify-center my-4"
-      v-if="question.status === 'open' && loginUser && question.user.id === loginUser.id"
-    >
-      <v-btn color="green" rounded="xl" @click="changeQuestionStatus"
-        >この質問を解決済みにする</v-btn
-      >
+    <div class="d-flex justify-center my-4"
+      v-if="question.status === 'open' && loginUser && question.user.id === loginUser.id">
+      <v-btn color="green" rounded="xl" @click="changeQuestionStatus">この質問を解決済みにする</v-btn>
     </div>
     <v-divider :thickness="2"></v-divider>
     <div class="ma-2 ml-0">
@@ -71,17 +49,9 @@
         <v-tooltip location="bottom" :disabled="canSubmitNewContent(newAnswerContent)">
           <template v-slot:activator="{ props }">
             <span v-bind="props">
-              <v-btn
-                rounded="xl"
-                color="green"
-                append-icon="mdi-send"
-                v-bind="props"
-                @click="submitNewAnswer"
-                :disabled="!canSubmitNewContent(newAnswerContent)"
-                >回答を送信</v-btn
-              ></span
-            > </template
-          ><span>回答が入力されていません</span>
+              <v-btn rounded="xl" color="green" append-icon="mdi-send" v-bind="props" @click="submitNewAnswer"
+                :disabled="!canSubmitNewContent(newAnswerContent)">回答を送信</v-btn></span>
+          </template><span>回答が入力されていません</span>
         </v-tooltip>
       </div>
     </div>
@@ -97,14 +67,8 @@
           <v-btn color="black" rounded="xl" append-icon="mdi-close" class="mr-1" @click="hideModal">
             閉じる
           </v-btn>
-          <v-btn
-            color="green"
-            rounded="xl"
-            append-icon="mdi-send"
-            :disabled="!canSubmitNewContent(modalContent)"
-            @click="submitEditedData"
-            class="ml-3 mr-6"
-          >
+          <v-btn color="green" rounded="xl" append-icon="mdi-send" :disabled="!canSubmitNewContent(modalContent)"
+            @click="submitEditedData" class="ml-3 mr-6">
             編集内容を保存する
           </v-btn>
         </div>
@@ -118,7 +82,7 @@ import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import { ref, onMounted, inject, type Ref } from 'vue'
 import { type User } from '@/lib/api/users'
-import { getQuestion, type Question } from '@/lib/api/questions'
+import { getQuestion, putQuestion, type Question } from '@/lib/api/questions'
 import { postAnswer, type Answer } from '@/lib/api/answers'
 import { type Tag } from '@/lib/api/tags'
 import QuestionStatus from '@/components/QuestionStatus.vue'
@@ -141,10 +105,11 @@ const loginUser = inject<Ref<User | null>>('loginUser')
 
 const submitNewAnswer = async () => {
   if (!question.value) throw new Error('question is null')
+  if (!loginUser?.value) throw new Error('loginUser is null')
   await postAnswer({
     content: newAnswerContent.value,
     question_id: question.value.id,
-    user_id: question.value.user.id
+    user_id: loginUser.value.id
   })
   newAnswerContent.value = ''
 }
@@ -159,10 +124,16 @@ const hideModal = () => {
   isVisible.value = false
 }
 
-const submitEditedData = () => {
+const submitEditedData = async () => {
   if (isQuestion.value) {
-    // Todo: APIに置き換える
-    console.log('質問が編集されました')
+  if (!question.value) throw new Error('question is null')
+    await putQuestion({
+      id: question.value.id,
+      content: modalContent.value,
+      title: question.value.title,
+      status: question.value.status,
+      tags: question.value.tags?.map((tag) => ({ id: tag.id })) ?? []
+    })
   } else {
     // Todo: APIに置き換える
     console.log('回答が編集されました')
@@ -174,8 +145,15 @@ const canSubmitNewContent = (content: string) => {
   return content.length > 0
 }
 
-const changeQuestionStatus = () => {
-  if (!question.value) return
+const changeQuestionStatus = async () => {
+  if (!question.value) throw new Error('question is null')
+  await putQuestion({
+    id: question.value.id,
+    content: question.value.content,
+    title: question.value.title,
+    status: 'closed',
+    tags: question.value.tags?.map((tag) => ({ id: tag.id })) ?? []
+  })
   question.value.status = 'closed'
 }
 

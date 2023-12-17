@@ -102,3 +102,26 @@ export const postQuestion = async (req: PostQuestionRequest): Promise<PostQuesti
 }
 
 // TODO: PUT /questions/:id
+export type PutQuestionRequest = {
+  id: Question['id']
+  title: string
+  content: string
+  tags: Omit<Tag, 'name'>[]
+  status: QuestionStatus
+}
+export type PutQuestionResponse = Question
+
+export const putQuestion = async (req: PutQuestionRequest): Promise<PutQuestionResponse> => {
+  const res = await fetch(`${BASE}/questions/${req.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(req)
+  })
+  if (!res.ok) {
+    throw new Error(res.statusText)
+  }
+  const json: PutQuestionResponse = await res.json()
+  return json
+}
