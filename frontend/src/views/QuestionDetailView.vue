@@ -10,7 +10,8 @@
       </div>
       <div class="text-end">
         <v-chip variant="text" color="grey">{{ question.user.name }}</v-chip>
-        <v-chip variant="text" color="grey">投稿日:{{ question.created_at ? parseDate(question.created_at).toLocaleDateString() : ''
+        <v-chip variant="text" color="grey">投稿日:{{ question.created_at ?
+          parseDate(question.created_at).toLocaleDateString() : ''
         }}</v-chip>
       </div>
     </div>
@@ -22,9 +23,9 @@
       </div>
     </div>
     <v-divider :thickness="1"></v-divider>
-    <DetailCard :editorId="editorId" :content="question.content" :user="question.user" :createdAt="parseDate(question.created_at)"
-      :showModal="showModal" :isQuestion="true" :isQuestionResolved="isQuestionResolved"
-      @update:isQuestionResolved="isQuestionResolved = $event" />
+    <DetailCard :editorId="editorId" :content="question.content" :user="question.user"
+      :createdAt="parseDate(question.created_at)" :showModal="showModal" :isQuestion="true"
+      :isQuestionResolved="isQuestionResolved" @update:isQuestionResolved="isQuestionResolved = $event" />
     <v-divider :thickness="2"></v-divider>
     <div class="ma-2 ml-0">
       <h2>{{ answers.length }}件の回答</h2>
@@ -81,7 +82,7 @@ import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import { ref, onMounted } from 'vue'
 import { getQuestion, type Question } from '@/lib/api/questions'
-import { type Answer } from '@/lib/api/answers'
+import { postAnswer, type Answer } from '@/lib/api/answers'
 import { type Tag } from '@/lib/api/tags'
 import QuestionStatus from '@/components/QuestionStatus.vue'
 import QuestionTag from '@/components/QuestionTag.vue'
@@ -100,8 +101,13 @@ const isQuestionResolved = ref(false)
 const answers = ref<Answer[]>([])
 const question = ref<Question | null>(null)
 
-const submitNewAnswer = () => {
-  alert('回答を送信しました')
+const submitNewAnswer = async () => {
+  if (!question.value) throw new Error('question is null')
+  await postAnswer({
+    content: newAnswerContent.value,
+    question_id: question.value.id,
+    user_id: question.value.user.id
+  })
   newAnswerContent.value = ''
 }
 
