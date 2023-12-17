@@ -7,10 +7,14 @@ export type Answer = {
   user: User
   question_id: Question['id']
   content: string
-  created_at: Date
+  created_at: string
 }
 
-export type PostAnswerRequest = Omit<Answer, 'id' | 'createdAt'>
+export type PostAnswerRequest = {
+  user_id: User['id']
+  question_id: Question['id']
+  content: string
+}
 export type PostAnswerResponse = Answer
 
 export const postAnswer = async (req: PostAnswerRequest): Promise<PostAnswerResponse> => {
@@ -33,7 +37,7 @@ export const postAnswer = async (req: PostAnswerRequest): Promise<PostAnswerResp
   return json
 }
 
-export type PutAnswerRequest = Omit<Answer, 'userId' | 'createdAt'>
+export type PutAnswerRequest = Omit<Answer, 'user' | 'created_at'>
 export type PutAnswerResponse = Answer
 
 export const putAnswer = async (req: PutAnswerRequest): Promise<PutAnswerResponse> => {

@@ -10,7 +10,7 @@ export type Question = {
   user: User
   title: string
   content: string
-  created_at: Date
+  created_at: string
   tags?: Tag[]
   answers?: Answer[]
   status: QuestionStatus
@@ -71,7 +71,7 @@ export const getQuestion = async (req: GetQuestionRequest): Promise<GetQuestionR
 }
 
 export type PostQuestionRequest = {
-  userId: User['id']
+  user_id: User['id']
   title: string
   content: string
   tags: Omit<Tag, 'name'>[]
