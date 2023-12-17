@@ -76,6 +76,7 @@ export type PostQuestionRequest = {
   content: string
   tags: Omit<Tag, 'name'>[]
   status?: QuestionStatus
+  bot_post: boolean
 }
 export type PostQuestionResponse = Question
 
