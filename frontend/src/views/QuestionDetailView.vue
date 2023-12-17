@@ -61,6 +61,13 @@
           <span class="headline">回答を編集する</span>
         </v-card-title>
         <v-card-text>
+          <v-text-field
+          label="タイトル"
+          placeholder="質問のタイトルを入力"
+          v-model="newTitle"
+          required
+          class="ma-3"
+        ></v-text-field>
           <MdEditor v-model="modalContent" :language="language" />
         </v-card-text>
         <div class="my-3" style="display: flex; justify-content: flex-end">
@@ -93,6 +100,7 @@ import { parseDate } from '@/lib/parseDate'
 
 const editorId = 'preview-only'
 const modalContent = ref('')
+const newTitle = ref('')
 const newAnswerContent = ref('')
 const language = 'en-US'
 const isVisible = ref(false)
@@ -130,7 +138,7 @@ const submitEditedData = async () => {
     await putQuestion({
       id: question.value.id,
       content: modalContent.value,
-      title: question.value.title,
+      title: newTitle.value,
       status: question.value.status,
       tags: question.value.tags?.map((tag) => ({ id: tag.id })) ?? []
     })
@@ -165,6 +173,7 @@ onMounted(() => {
       question.value = response
       answers.value = question.value.answers ?? []
       tags.value = question.value.tags ?? []
+      newTitle.value = question.value.title
       if (question.value.status === 'closed') {
         isQuestionResolved.value = true
       }
