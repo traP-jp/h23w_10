@@ -19,6 +19,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: h23w10
       MYSQL_DATABASE: h23w10
+      CLIENT_ID:
+      CLIENT_SECLET:
 
   adminer:
     image: adminer
