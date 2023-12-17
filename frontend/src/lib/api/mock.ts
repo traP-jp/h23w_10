@@ -53,7 +53,7 @@ const questions: Question[] = new Array(100)
       ...question,
       id,
       title: `テストの質問${i}`,
-      userId: crypto.randomUUID(),
+      user: users[0],
       tags: randomChoice(tags, Math.floor(Math.random() * 3)),
       answers: new Array(Math.floor(Math.random() * 10)).fill({
         id: crypto.randomUUID(),

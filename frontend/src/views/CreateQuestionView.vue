@@ -131,10 +131,10 @@ const hideModal = () => {
 
 const postNewQuestion = async () => {
   const selectedTagIds: Omit<Tag, 'name'>[] = form.tags.map((tag) => ({ id: tag.id }))
-  if (!loginUser?.value?.id) throw new Error('User is not logged in.')
+  if (!loginUser?.value) throw new Error('User is not logged in.')
   try {
     const res = await postQuestion({
-      userId: loginUser.value?.id,
+      user: loginUser.value,
       title: form.title,
       content: form.content,
       tags: selectedTagIds,
