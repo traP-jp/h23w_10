@@ -4,10 +4,10 @@ import type { User } from './users'
 
 export type Answer = {
   id: string
-  userId: User['id']
-  questionId: Question['id']
+  user: User
+  question_id: Question['id']
   content: string
-  createdAt: Date
+  created_at: Date
 }
 
 export type PostAnswerRequest = Omit<Answer, 'id' | 'createdAt'>
@@ -19,7 +19,7 @@ export const postAnswer = async (req: PostAnswerRequest): Promise<PostAnswerResp
     return postAnswerMock(req)
   }
 
-  const res = await fetch(`${BASE}/questions/${req.questionId}/answers`, {
+  const res = await fetch(`${BASE}/questions/${req.question_id}/answers`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -33,4 +33,20 @@ export const postAnswer = async (req: PostAnswerRequest): Promise<PostAnswerResp
   return json
 }
 
-// TODO: PUT /questions/:questionId/answers/:answerId
+export type PutAnswerRequest = Omit<Answer, 'userId' | 'createdAt'>
+export type PutAnswerResponse = Answer
+
+export const putAnswer = async (req: PutAnswerRequest): Promise<PutAnswerResponse> => {
+  const res = await fetch(`${BASE}/questions/${req.question_id}/answers/${req.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(req)
+  })
+  if (!res.ok) {
+    throw new Error(res.statusText)
+  }
+  const json: Answer = await res.json()
+  return json
+}

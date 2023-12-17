@@ -7,10 +7,10 @@ export type QuestionStatus = 'open' | 'closed'
 
 export type Question = {
   id: string
-  userId: User['id']
+  user: User
   title: string
   content: string
-  createdAt: Date
+  created_at: Date
   tags?: Tag[]
   answers?: Answer[]
   status: QuestionStatus
