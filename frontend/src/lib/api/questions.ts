@@ -109,7 +109,7 @@ export type PutQuestionRequest = {
   tags: Omit<Tag, 'name'>[]
   status: QuestionStatus
 }
-export type PutQuestionResponse = Question
+export type PutQuestionResponse = void
 
 export const putQuestion = async (req: PutQuestionRequest): Promise<PutQuestionResponse> => {
   const res = await fetch(`${BASE}/questions/${req.id}`, {
@@ -122,6 +122,6 @@ export const putQuestion = async (req: PutQuestionRequest): Promise<PutQuestionR
   if (!res.ok) {
     throw new Error(res.statusText)
   }
-  const json: PutQuestionResponse = await res.json()
-  return json
+  // const json: PutQuestionResponse = await res.json()
+  return
 }
