@@ -33,6 +33,14 @@ type QuestionWithUser struct {
 	Status    domain.QuestionStatus `json:"status,omitempty"`
 }
 
+type AnswerWithUser struct {
+	ID         string    `json:"id,omitempty"`
+	User       User      `json:"user,omitempty"`
+	QuestionID string    `json:"question_id,omitempty"`
+	Content    string    `json:"content,omitempty"`
+	CreatedAt  time.Time `json:"created_at,omitempty"`
+}
+
 type GetQuestionsResponse struct {
 	Total     int                `json:"total,omitempty"`
 	Questions []QuestionWithUser `json:"questions,omitempty"`
@@ -45,7 +53,7 @@ type GetQuestionByIDResponse struct {
 	Content   string                `json:"content,omitempty"`
 	CreatedAt time.Time             `json:"created_at,omitempty"`
 	Tags      []domain.Tag          `json:"tags,omitempty"`
-	Answers   []domain.Answer       `json:"answers,omitempty"`
+	Answers   []AnswerWithUser      `json:"answers,omitempty"`
 	Status    domain.QuestionStatus `json:"status,omitempty"`
 }
 
@@ -163,6 +171,7 @@ func (h *Handler) GetQuestionByID(c echo.Context) error {
 	id := c.Param("id")
 	question, err := h.qrepo.FindByID(id)
 	if errors.Is(err, repository.ErrNotFound) {
+		log.Println("question not found")
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	} else if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -170,6 +179,7 @@ func (h *Handler) GetQuestionByID(c echo.Context) error {
 
 	user, err := h.urepo.FindUserByID(question.UserID)
 	if errors.Is(err, repository.ErrNotFound) {
+		log.Println("user not found")
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	} else if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -179,7 +189,19 @@ func (h *Handler) GetQuestionByID(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	question.Answers = answers
+
+	answerUsers := make(map[string]domain.User)
+	for _, answer := range answers {
+		if _, ok := answerUsers[answer.UserID]; !ok {
+			user, err := h.urepo.FindUserByID(answer.UserID)
+			if errors.Is(err, repository.ErrNotFound) {
+				continue
+			} else if err != nil {
+				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+			}
+			answerUsers[answer.UserID] = *user
+		}
+	}
 
 	response := GetQuestionByIDResponse{
 		ID: question.ID,
@@ -194,8 +216,23 @@ func (h *Handler) GetQuestionByID(c echo.Context) error {
 		Content:   question.Content,
 		CreatedAt: question.CreatedAt,
 		Tags:      question.Tags,
-		Answers:   question.Answers,
-		Status:    question.Status,
+		Answers: lo.Map(answers, func(a domain.Answer, _ int) AnswerWithUser {
+			u := answerUsers[a.UserID]
+			return AnswerWithUser{
+				ID: a.ID,
+				User: User{
+					ID:          u.ID,
+					Name:        u.Name,
+					DisplayName: u.DisplayName,
+					IconURL:     u.IconURL.String(),
+					UserType:    string(u.UserType),
+				},
+				QuestionID: a.QuestionID,
+				Content:    a.Content,
+				CreatedAt:  a.CreatedAt,
+			}
+		}),
+		Status: question.Status,
 	}
 
 	return c.JSON(http.StatusOK, response)
