@@ -1,5 +1,7 @@
 <template>
-  <v-chip>
+  <v-chip
+    :to="`/questions?page=1&tag=${tag.id}`"
+  >
     {{ props.tag.name }}
   </v-chip>
 </template>
