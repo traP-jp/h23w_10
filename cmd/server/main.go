@@ -97,7 +97,7 @@ func main() {
 	api.GET("/oauth2/params", h.GetAuthParams)
 	api.GET("/oauth2/callback", h.Oauth2Callback)
 
-	api.POST("/imggen", h.PostImage)
+	api.GET("/imggen", h.PostImage)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

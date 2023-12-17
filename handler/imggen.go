@@ -15,27 +15,23 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type PostImageRequest struct {
-	UserID string `json:"user_id,omitempty"`
-}
-
 func (h *Handler) PostImage(c echo.Context) error {
-	var request PostImageRequest
-	if err := c.Bind(&request); err != nil {
-		return err
+	userID := c.QueryParam("user_id")
+	if userID == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "user_id is required")
 	}
 
-	if _, err := os.Stat(filepath.Join(imagesDir, request.UserID+".png")); err == nil {
-		return c.File(filepath.Join(imagesDir, request.UserID+".png"))
+	if _, err := os.Stat(filepath.Join(imagesDir, userID+".png")); err == nil {
+		return c.File(filepath.Join(imagesDir, userID+".png"))
 	}
 
-	user, err := h.urepo.FindUserByID(request.UserID)
+	user, err := h.urepo.FindUserByID(userID)
 	if errors.Is(err, repository.ErrNotFound) {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	} else if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	questions, _, err := h.qrepo.FindByUserID(request.UserID, &repository.FindQuestionsCondition{
+	questions, _, err := h.qrepo.FindByUserID(userID, &repository.FindQuestionsCondition{
 		Limit:    46,
 		Offset:   0,
 		Statuses: domain.AvailableQuestionStatus(),
@@ -60,7 +56,7 @@ func (h *Handler) PostImage(c echo.Context) error {
 			} else if err != nil {
 				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 			}
-			if answer.UserID != request.UserID {
+			if answer.UserID != userID {
 				iconURLs[user.IconURL.String()] = user.IconURL.String()
 			}
 		}
