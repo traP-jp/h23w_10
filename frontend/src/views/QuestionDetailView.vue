@@ -183,8 +183,8 @@ onMounted(() => {
   getQuestion({ id })
     .then((response) => {
       question.value = response
-      answers.value = question.value.answers
-      tags.value = question.value.tags
+      answers.value = question.value.answers ?? []
+      tags.value = question.value.tags ?? []
       if (question.value.status === 'closed') {
         isQuestionResolved.value = true
       }

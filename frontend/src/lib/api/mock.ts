@@ -73,7 +73,7 @@ export const getQuestionsMock = async (req: GetQuestionsRequest): Promise<GetQue
   const ret = questions.filter((question) => {
     let flag = true
     if (req.tag) {
-      flag = flag && question.tags.some((tag) => tag.id === req.tag)
+      flag = (flag && question.tags?.some((tag) => tag.id === req.tag)) ?? false
     }
     if (req.status) {
       flag = flag && question.status === req.status

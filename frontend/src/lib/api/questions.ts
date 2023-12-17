@@ -11,8 +11,8 @@ export type Question = {
   title: string
   content: string
   createdAt: Date
-  tags: Tag[]
-  answers: Answer[]
+  tags?: Tag[]
+  answers?: Answer[]
   status: QuestionStatus
 }
 
