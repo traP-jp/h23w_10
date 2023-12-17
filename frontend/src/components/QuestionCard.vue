@@ -18,7 +18,6 @@
         <div :class="$style.statusContainer">
           <div :class="$style.status">
             <question-status :status="props.question.status" />
-            {{ props.question.answers ? props.question.answers.length : 0 }}件の回答
           </div>
           <div :class="`${$style.status} text-caption`">
             {{ props.question.user.name }}
