@@ -20,7 +20,7 @@
       />
     </div>
     <div
-      v-if="data.questions"
+      v-if="data.questions !== undefined"
       :class="[
         $style.questions,
         {
