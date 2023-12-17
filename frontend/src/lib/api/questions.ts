@@ -10,7 +10,7 @@ export type Question = {
   user: User
   title: string
   content: string
-  created_at: Date
+  created_at: string
   tags?: Tag[]
   answers?: Answer[]
   status: QuestionStatus

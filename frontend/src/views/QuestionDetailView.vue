@@ -10,7 +10,7 @@
       </div>
       <div class="text-end">
         <v-chip variant="text" color="grey">{{ question.user.name }}</v-chip>
-        <v-chip variant="text" color="grey">投稿日:{{ question.created_at ? question.created_at.toLocaleDateString() : ''
+        <v-chip variant="text" color="grey">投稿日:{{ question.created_at ? parseDate(question.created_at).toLocaleDateString() : ''
         }}</v-chip>
       </div>
     </div>
@@ -22,7 +22,7 @@
       </div>
     </div>
     <v-divider :thickness="1"></v-divider>
-    <DetailCard :editorId="editorId" :content="question.content" :user="question.user" :createdAt="question.created_at"
+    <DetailCard :editorId="editorId" :content="question.content" :user="question.user" :createdAt="parseDate(question.created_at)"
       :showModal="showModal" :isQuestion="true" :isQuestionResolved="isQuestionResolved"
       @update:isQuestionResolved="isQuestionResolved = $event" />
     <v-divider :thickness="2"></v-divider>
@@ -31,7 +31,7 @@
     </div>
     <div class="answers">
       <DetailCard v-for="answer in answers" :key="answer.id" :editorId="editorId" :content="answer.content"
-        :user="answer.user" :createdAt="answer.created_at" :showModal="showModal" :isQuestion="false"
+        :user="answer.user" :createdAt="parseDate(answer.created_at)" :showModal="showModal" :isQuestion="false"
         :isQuestionResolved="isQuestionResolved" @update:isQuestionResolved="isQuestionResolved = $event" />
     </div>
     <div class="d-flex justify-center my-4" v-if="question.status === 'open'">
@@ -87,6 +87,7 @@ import QuestionStatus from '@/components/QuestionStatus.vue'
 import QuestionTag from '@/components/QuestionTag.vue'
 import DetailCard from '@/components/DetailCard.vue'
 import { useRoute } from 'vue-router'
+import { parseDate } from '@/lib/parseDate'
 
 const editorId = 'preview-only'
 const modalContent = ref('')

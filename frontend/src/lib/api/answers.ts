@@ -7,7 +7,7 @@ export type Answer = {
   user: User
   question_id: Question['id']
   content: string
-  created_at: Date
+  created_at: string
 }
 
 export type PostAnswerRequest = {
