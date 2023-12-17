@@ -6,6 +6,7 @@ import (
 	"image"
 	"image/color"
 	_ "image/gif"
+	"log"
 	"math"
 	"net/http"
 	"os"
@@ -19,7 +20,9 @@ type ImggenService struct {
 }
 
 func NewImggenService(layerConfig []LayerConfig) *ImggenService {
-	os.Mkdir("images", 0777)
+	if err := os.Mkdir("images", 0777); err != nil {
+		log.Println(err)
+	}
 	go cleaner("images", 5*time.Minute)
 	return &ImggenService{
 		layerConfig: layerConfig,
