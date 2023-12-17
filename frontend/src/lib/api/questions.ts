@@ -71,7 +71,7 @@ export const getQuestion = async (req: GetQuestionRequest): Promise<GetQuestionR
 }
 
 export type PostQuestionRequest = {
-  userId: User['id']
+  user: User
   title: string
   content: string
   tags: Omit<Tag, 'name'>[]
