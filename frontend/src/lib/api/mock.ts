@@ -45,7 +45,7 @@ const users: User[] = [
 const questions: Question[] = new Array(100)
   .fill({
     content: 'テストの質問です',
-    createdAt: new Date(2023, 11, 13)
+    created_at: new Date(2023, 11, 13)
   } satisfies Partial<Question>)
   .map<Question>((question, i) => {
     const id = `test-question-${i}`
@@ -57,10 +57,10 @@ const questions: Question[] = new Array(100)
       tags: randomChoice(tags, Math.floor(Math.random() * 3)),
       answers: new Array(Math.floor(Math.random() * 10)).fill({
         id: crypto.randomUUID(),
-        questionId: id,
+        question_id: id,
         content: 'テストの回答です',
-        userId: crypto.randomUUID()
-      } satisfies Omit<Answer, 'createdAt'>),
+        user: users[0],
+      } satisfies Omit<Answer, 'created_at'>),
       status: Math.random() < 0.5 ? 'open' : 'closed'
     }
   })
@@ -106,12 +106,13 @@ export const postQuestionMock = async (req: PostQuestionRequest): Promise<PostQu
   const question: Question = {
     ...req,
     id: crypto.randomUUID(),
-    createdAt: new Date(),
+    created_at: new Date(),
     tags: req.tags
       .map((tag) => tags.find((t) => t.id === tag.id))
       .filter((tag): tag is Tag => tag !== undefined),
     answers: [],
-    status: req.status ?? 'open'
+    status: req.status ?? 'open',
+    user: users[0]
   }
   questions.push(question)
   return question
@@ -127,7 +128,7 @@ export const postAnswerMock = async (req: PostAnswerRequest): Promise<PostAnswer
   const answer: Answer = {
     ...req,
     id: crypto.randomUUID(),
-    createdAt: new Date()
+    created_at: new Date()
   }
   answers.push(answer)
   return answer
