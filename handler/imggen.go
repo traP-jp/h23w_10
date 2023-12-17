@@ -38,7 +38,7 @@ func (h *Handler) PostImage(c echo.Context) error {
 	questions, _, err := h.qrepo.FindByUserID(request.UserID, &repository.FindQuestionsCondition{
 		Limit:    46,
 		Offset:   0,
-		Statuses: []domain.QuestionStatus{domain.QuestionStatusOpen, domain.QuestionStatusClosed},
+		Statuses: domain.AvailableQuestionStatus(),
 	})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
