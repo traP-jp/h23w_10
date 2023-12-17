@@ -22,10 +22,10 @@
           </div>
           <div :class="`${$style.status} text-caption`">
             {{ props.question.user.name }}
-            <v-tooltip :text="diffHuman(props.question.created_at).localeString" location="top">
+            <v-tooltip :text="diffHuman(parseDate(props.question.created_at)).localeString" location="top">
               <template v-slot:activator="{ props: tooltipProps }">
                 <span v-bind="tooltipProps">
-                  {{ diffHuman(props.question.created_at).diff }}
+                  {{ diffHuman(parseDate(props.question.created_at)).diff }}
                 </span>
               </template>
             </v-tooltip>
@@ -41,6 +41,7 @@ import { diffHuman } from '@/lib/format'
 import QuestionTag from './QuestionTag.vue'
 import QuestionStatus from './QuestionStatus.vue'
 import type { Question } from '@/lib/api/questions'
+import { parseDate } from '@/lib/parseDate'
 
 export interface Props {
   question: Question
