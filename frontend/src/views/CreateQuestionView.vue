@@ -162,7 +162,7 @@ const postNewTag = async () => {
     const res = await postTag({
       name: tagName.value
     })
-    form.tags.push(res.name)
+    form.tags.push(res.id)
   } catch (err) {
     console.log(err)
   }
