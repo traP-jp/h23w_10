@@ -10,7 +10,11 @@ export type Answer = {
   created_at: Date
 }
 
-export type PostAnswerRequest = Omit<Answer, 'id' | 'created_at'>
+export type PostAnswerRequest = {
+  user_id: User['id']
+  question_id: Question['id']
+  content: string
+}
 export type PostAnswerResponse = Answer
 
 export const postAnswer = async (req: PostAnswerRequest): Promise<PostAnswerResponse> => {

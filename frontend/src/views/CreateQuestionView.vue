@@ -134,7 +134,7 @@ const postNewQuestion = async () => {
   if (!loginUser?.value) throw new Error('User is not logged in.')
   try {
     const res = await postQuestion({
-      user: loginUser.value,
+      user_id: loginUser.value?.id,
       title: form.title,
       content: form.content,
       tags: selectedTagIds,

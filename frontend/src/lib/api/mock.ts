@@ -128,7 +128,8 @@ export const postAnswerMock = async (req: PostAnswerRequest): Promise<PostAnswer
   const answer: Answer = {
     ...req,
     id: crypto.randomUUID(),
-    created_at: new Date()
+    created_at: new Date(),
+    user: users[0]
   }
   answers.push(answer)
   return answer

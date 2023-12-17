@@ -9,6 +9,8 @@ services:
       - 8080:8080
     environment:
       MYSQL_HOST: db
+      CLIENT_ID:
+      CLIENT_SECLET:
 
   db:
     image: mysql:latest
