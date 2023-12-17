@@ -12,7 +12,7 @@ import (
 // dir: クリーンアップ対象のディレクトリパス
 // maxAge: 削除するファイルの最大経過時間
 func cleaner(dir string, maxAge time.Duration) {
-	ticker := time.NewTicker(time.Hour)
+	ticker := time.NewTicker(5 * time.Minute)
 	for {
 		<-ticker.C
 

@@ -19,7 +19,7 @@ type ImggenService struct {
 }
 
 func NewImggenService(layerConfig []LayerConfig) *ImggenService {
-	go cleaner("images", 1*time.Hour)
+	go cleaner("images", 5*time.Minute)
 	os.Mkdir("images", 0777)
 	return &ImggenService{
 		layerConfig: layerConfig,
