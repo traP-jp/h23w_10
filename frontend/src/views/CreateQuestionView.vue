@@ -34,6 +34,11 @@
             </v-list-item>
           </template>
         </v-autocomplete>
+        <v-switch label="この質問をtraQにもbotで投稿する"
+          v-model="form.bot_post"
+          class="mx-3"
+          color="primary"
+        />
         <div class="text-end mb-3 mr-3">
           <v-tooltip location="bottom" :disabled="canPostQuestion">
             <template v-slot:activator="{ props }">
@@ -104,10 +109,11 @@ import { useRouter } from 'vue-router'
 const tagName = ref('')
 
 const language = 'en-US'
-const form = reactive<{ title: string; content: string; tags: string[] }>({
+const form = reactive<{ title: string; content: string; tags: string[], bot_post: boolean }>({
   title: '',
   content: '# 質問内容を入力',
-  tags: []
+  tags: [],
+  bot_post: false
 })
 const tags = await getTags()
 const router = useRouter()
@@ -142,7 +148,8 @@ const postNewQuestion = async () => {
       title: form.title,
       content: form.content,
       tags: selectedTagIds,
-      status: 'open'
+      status: 'open',
+      bot_post: form.bot_post
     })
     router.push(`/questions/${res.id}`)
   } catch (err) {
@@ -155,7 +162,7 @@ const postNewTag = async () => {
     const res = await postTag({
       name: tagName.value
     })
-    form.tags.push(res)
+    form.tags.push(res.id)
   } catch (err) {
     console.log(err)
   }
