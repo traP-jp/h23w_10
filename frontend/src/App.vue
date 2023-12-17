@@ -7,13 +7,20 @@
     </v-navigation-drawer>
     <v-app-bar>
       <v-app-bar-nav-icon @click="toggleDrawer" />
-      <v-app-bar-title>staQoverflow</v-app-bar-title>
-      <template v-if="loginUser !== null">
-        <v-btn color="primary" @click="showUserInfo">ユーザー情報</v-btn>
-      </template>
-      <template v-else>
-        <v-btn color="primary" @click="handleLogin">ログイン</v-btn>
-      </template>
+      <router-link to="/">
+        <v-btn variant="text" color="black">
+          <v-app-bar-title>staQoverflow</v-app-bar-title>
+        </v-btn>
+      </router-link>
+      <v-spacer></v-spacer>
+      <div class="text-end mr-2">
+        <template v-if="loginUser !== null">
+          <v-btn color="primary" @click="showUserInfo">ユーザー情報</v-btn>
+        </template>
+        <template v-else>
+          <v-btn color="primary" @click="handleLogin">ログイン</v-btn>
+        </template>
+      </div>
     </v-app-bar>
     <v-main>
       <Suspense>
