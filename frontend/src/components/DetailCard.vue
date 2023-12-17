@@ -3,7 +3,7 @@
     <MdPreview :editorId="props.editorId" :modelValue="props.content" />
     <v-card-actions class="d-flex justify-space-between">
       <div class="d-flex">
-        <v-btn :to="`$/users/${props.user}`">
+        <v-btn :to="`$/users/${props.user.id}`">
           <v-avatar size="small" class="avatar">
             <div class="mr--1"></div>
             <v-img :src="user?.icon_url ?? ''" aspect-ratio="1" contain class="avatar-image"></v-img>
