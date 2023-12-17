@@ -46,7 +46,7 @@ func main() {
 		ClientID:     getEnvOrDefault("CLIENT_ID", "client_id"),
 		ClientSecret: getEnvOrDefault("CLIENT_SECRET", "client_secret"),
 		Endpoint:     traqoauth2.Prod,
-		RedirectURL:  getEnvOrDefault("REDIRECT_URL", "http://localhost:8080/oauth2/callback"),
+		RedirectURL:  getEnvOrDefault("REDIRECT_URL", "http://localhost:8000/api/oauth2/callback"),
 		Scopes:       []string{"read"},
 	}
 
