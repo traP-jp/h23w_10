@@ -44,15 +44,24 @@ func (h *Handler) PostImage(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	iconURLs := make(map[string]struct{})
+	iconURLs := make(map[string]string)
 	for _, question := range questions {
 		a, err := h.arepo.FindByQuestionID(question.ID)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
 		for _, answer := range a {
+			if _, ok := iconURLs[answer.UserID]; ok {
+				continue
+			}
+			user, err := h.urepo.FindUserByID(answer.UserID)
+			if errors.Is(err, repository.ErrNotFound) {
+				continue
+			} else if err != nil {
+				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+			}
 			if answer.UserID != request.UserID {
-				iconURLs[answer.UserID] = struct{}{}
+				iconURLs[user.IconURL.String()] = user.IconURL.String()
 			}
 		}
 	}
@@ -65,7 +74,7 @@ func (h *Handler) PostImage(c echo.Context) error {
 			return err
 		}
 		icons <- img
-		for iconURL := range iconURLs {
+		for _, iconURL := range iconURLs {
 			img, err := openImage(iconURL)
 			if err != nil {
 				return err
