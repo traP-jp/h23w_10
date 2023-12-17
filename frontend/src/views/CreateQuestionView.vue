@@ -15,6 +15,7 @@
           label="質問のタグを選択"
           :items="tags"
           item-title="name"
+          item-value="id"
           class="mx-3 mt-6"
           v-model="form.tags"
           clearable
@@ -103,10 +104,10 @@ import { useRouter } from 'vue-router'
 const tagName = ref('')
 
 const language = 'en-US'
-const form = reactive<{ title: string; content: string; tags: Tag[] }>({
+const form = reactive<{ title: string; content: string; tags: string[] }>({
   title: '',
   content: '# 質問内容を入力',
-  tags: [] as Tag[]
+  tags: []
 })
 const tags = await getTags()
 const router = useRouter()
@@ -130,7 +131,10 @@ const hideModal = () => {
 }
 
 const postNewQuestion = async () => {
-  const selectedTagIds: Omit<Tag, 'name'>[] = form.tags.map((tag) => ({ id: tag.id }))
+  console.log(form.tags)
+  const selectedTagIds: Omit<Tag, 'name'>[] = form.tags.map((id) => ({ id }))
+
+  console.log(selectedTagIds)
   if (!loginUser?.value) throw new Error('User is not logged in.')
   try {
     const res = await postQuestion({
