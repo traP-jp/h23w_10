@@ -1,6 +1,8 @@
 module github.com/traP-jp/h23w_10
 
-go 1.21.5
+go 1.23.0
+
+toolchain go1.24.1
 
 require (
 	github.com/go-sql-driver/mysql v1.7.1
@@ -11,10 +13,10 @@ require (
 	github.com/labstack/echo-contrib v0.15.0
 	github.com/labstack/echo/v4 v4.11.3
 	github.com/samber/lo v1.39.0
-	github.com/traPtitech/go-traq v0.0.0-20231208054503-2e91b85cdb2e
+	github.com/traPtitech/go-traq v0.0.0-20250819014447-0a9ace963ef6
 	github.com/traPtitech/go-traq-oauth2 v0.0.0-20231128211850-d34d8c287ff9
 	golang.org/x/image v0.14.0
-	golang.org/x/oauth2 v0.15.0
+	golang.org/x/oauth2 v0.30.0
 	golang.org/x/sync v0.2.0
 )
 
@@ -39,4 +41,5 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
+	gopkg.in/validator.v2 v2.0.1 // indirect
 )
