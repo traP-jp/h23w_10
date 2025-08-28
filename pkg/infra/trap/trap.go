@@ -24,7 +24,7 @@ func NewTrapService(traqClient *traq.APIClient, botToken string, channleID strin
 }
 
 func (t *TrapService) GetMe(ctx context.Context, token string) (*domain.User, error) {
-	user, res, err := t.traqClient.MeApi.GetMe(getAuth(ctx, token)).Execute()
+	user, res, err := t.traqClient.MeAPI.GetMe(getAuth(ctx, token)).Execute()
 	if err != nil {
 		return nil, err
 	}
